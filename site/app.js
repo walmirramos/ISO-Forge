@@ -2,3 +2,10 @@ const modes={equilibrado:{icon:'icons/equilibrado.png',tag:'REMOÇÕES PREDEFINI
 const tabs=[...document.querySelectorAll('[data-mode]')];
 function selectMode(tab){const mode=modes[tab.dataset.mode];tabs.forEach(t=>{const selected=t===tab;t.setAttribute('aria-selected',String(selected));t.tabIndex=selected?0:-1});document.getElementById('mode-icon').src=mode.icon;for(const key of ['tag','title','description','warning'])document.getElementById('mode-'+key).textContent=mode[key];document.getElementById('mode-panel').setAttribute('aria-labelledby',tab.id)}
 tabs.forEach((tab,index)=>{tab.addEventListener('click',()=>selectMode(tab));tab.addEventListener('keydown',event=>{let next;if(event.key==='ArrowRight')next=(index+1)%tabs.length;else if(event.key==='ArrowLeft')next=(index+tabs.length-1)%tabs.length;else if(event.key==='Home')next=0;else if(event.key==='End')next=tabs.length-1;else return;event.preventDefault();selectMode(tabs[next]);tabs[next].focus()})});
+
+const splitInput=document.getElementById('theme-split');
+splitInput.addEventListener('input',()=>{
+ const value=Number(splitInput.value);
+ splitInput.closest('.theme-compare').style.setProperty('--split',value+'%');
+ splitInput.setAttribute('aria-valuetext',value+'% tema claro e '+(100-value)+'% tema escuro');
+});
