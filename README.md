@@ -1,12 +1,13 @@
 # ISO Forge
 
 [![Idioma](https://img.shields.io/badge/Idioma-pt--BR-0078D4)](docs/usage.md)
-[![Interface](https://img.shields.io/badge/Interface-WinUI%203-0078D4)](docs/DEVELOPMENT.md)
+[![Windows 11](https://img.shields.io/badge/Windows-11-0078D4)](docs/usage.md)
 [![Portátil](https://img.shields.io/badge/Execução-Portátil-28a745)](https://github.com/walmirramos/ISO-Forge/releases/latest)
 
-**Crie sua ISO personalizada do Windows 11.** Interface nativa em português brasileiro, personalizada por **Dubbox**.
+**Crie sua ISO personalizada do Windows 11.** Versão em português brasileiro personalizada por **Dubbox**.
 
-[Baixar versão portátil](https://github.com/walmirramos/ISO-Forge/releases/latest) · [Como usar](docs/usage.md) · [Perguntas frequentes](docs/FAQ.md)
+[![Download](https://img.shields.io/badge/Download-Versão%20portátil-28a745)](https://github.com/walmirramos/ISO-Forge/releases/latest/download/ISOForge-0.1.1-isoforge.1-win-x64.zip)
+[![Documentação](https://img.shields.io/badge/Documentação-Português-0078D4)](docs/usage.md)
 
 ## Sobre o projeto
 
@@ -14,9 +15,9 @@ O ISO Forge permite selecionar uma imagem do Windows 11, escolher aplicativos e 
 
 O programa trabalha sobre uma cópia da mídia. Abrir a interface não inicia a criação automaticamente. Revise suas escolhas antes de confirmar.
 
-## Como baixar e executar
+## Como baixar e testar
 
-1. Acesse [Releases](https://github.com/walmirramos/ISO-Forge/releases/latest) e baixe o ZIP **win-x64** para PCs Intel/AMD.
+1. [Baixe o ZIP portátil em português](https://github.com/walmirramos/ISO-Forge/releases/latest/download/ISOForge-0.1.1-isoforge.1-win-x64.zip), para PCs Intel/AMD (x64).
 2. Extraia **todo o conteúdo** para uma pasta local.
 3. Abra **ISOForge.exe** e confirme a solicitação de administrador do Windows.
 4. Escolha o modo, selecione a imagem do Windows e confira a edição.
@@ -41,7 +42,7 @@ O programa trabalha sobre uma cópia da mídia. Abrir a interface não inicia a 
 - Retomada a partir de progresso salvo e cancelamento em pontos seguros.
 - SHA-256 da ISO produzida.
 
-## Documentação em português
+## Documentação e dúvidas
 
 - [Como usar e requisitos](docs/usage.md)
 - [Modos e componentes](docs/FEATURES.md)
@@ -55,8 +56,12 @@ O programa trabalha sobre uma cópia da mídia. Abrir a interface não inicia a 
 
 Teste a ISO em uma máquina virtual antes de instalar em um computador. O modo Mínimo e remoções avançadas podem produzir uma imagem que não inicialize ou não aceite atualizações. A tradução da interface não altera o idioma de uma ISO existente.
 
-## Autoria e distribuição
+## Autoria e avisos de distribuição
 
 Personalização e documentação em português: **Dubbox**. Projeto: [walmirramos/ISO-Forge](https://github.com/walmirramos/ISO-Forge).
 
 Os avisos de procedência e de terceiros estão preservados em [NOTICE.md](NOTICE.md) e na pasta `licenses` dos pacotes. Consulte os avisos antes de redistribuir. As mídias do Windows não acompanham o aplicativo.
+
+## Assinatura e integridade
+
+O executável desta edição não tem assinatura digital própria. O arquivo `.sha256` na página de download permite conferir a integridade do ZIP. Preserve os avisos de terceiros ao redistribuir.
