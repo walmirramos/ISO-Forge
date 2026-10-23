@@ -228,7 +228,7 @@ internal static class ResumeSupport
     {
         var mode = CleanupCatalog.ModeForRecipe(recipe) switch
         {
-            BuildMode.Tiny11 => "Tiny11", BuildMode.Tiny11Core => "Tiny11 Core",
+            BuildMode.Tiny11 => UiText.Get("Tiny11"), BuildMode.Tiny11Core => UiText.Get("Tiny11 Core"),
             _ => recipe.Flavor == BuildFlavor.Core ? UiText.Get("Custom with Core removals") : UiText.Get("Custom")
         };
         var compression = recipe.Compression switch

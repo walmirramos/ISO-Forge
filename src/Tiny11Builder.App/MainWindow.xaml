@@ -2,14 +2,14 @@
     x:Class="Tiny11Builder.App.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="Tiny11 Builder">
+    Title="Fluent11 ISO Studio">
     <Window.SystemBackdrop><MicaBackdrop Kind="BaseAlt"/></Window.SystemBackdrop>
     <Grid x:Name="Root" Language="pt-BR">
         <Grid.RowDefinitions><RowDefinition Height="48"/><RowDefinition Height="*"/></Grid.RowDefinitions>
         <Grid x:Name="TitleArea" Padding="24,0,140,0" ColumnSpacing="12">
             <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
             <FontIcon Glyph="&#xE7F8;" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
-            <TextBlock Grid.Column="1" Text="Tiny11 Builder" VerticalAlignment="Center" FontWeight="SemiBold"/>
+            <TextBlock Grid.Column="1" Text="Fluent11 ISO Studio" VerticalAlignment="Center" FontWeight="SemiBold"/>
         </Grid>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions><ColumnDefinition Width="248"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
@@ -41,7 +41,6 @@
                     <ComboBox x:Name="ThemeChoice" Header="Aparência" SelectionChanged="OnThemeChanged" HorizontalAlignment="Stretch" SelectedIndex="0">
                         <ComboBoxItem Content="Sistema"/><ComboBoxItem Content="Claro"/><ComboBoxItem Content="Escuro"/>
                     </ComboBox>
-                    <HyperlinkButton Content="Projeto original ↗" NavigateUri="https://github.com/ntdevlabs/tiny11builder" Padding="0"/>
                 </StackPanel>
             </Grid>
             <Grid Grid.Column="1" Background="{ThemeResource LayerFillColorDefaultBrush}" CornerRadius="16,0,0,0"
@@ -92,7 +91,7 @@
                                 <TextBlock x:Name="WelcomeTitle" Text="Boas-vindas" FontSize="56" FontWeight="Light" Opacity="{ThemeResource WelcomeTitleOpacity}"
                                            Foreground="{ThemeResource TextFillColorPrimaryBrush}" TextWrapping="Wrap"
                                            AutomationProperties.HeadingLevel="Level1"/>
-                                <TextBlock Text="Crie uma ISO personalizada do Windows 11. Selecione uma imagem, escolha o que remover e crie a ISO."
+                                <TextBlock Text="Crie sua ISO personalizada do Windows 11. Escolha a imagem de origem, personalize os componentes e gere uma ISO inicializável."
                                            FontSize="16" Style="{StaticResource Secondary}"/>
                             </StackPanel>
                             <Grid Grid.Row="1" RowSpacing="12">
@@ -106,14 +105,14 @@
                                         <RowDefinition Height="*"/><RowDefinition Height="0"/><RowDefinition Height="0"/>
                                     </Grid.RowDefinitions>
                                     <Button x:Name="RegularModeCard" Style="{StaticResource ModeCard}" Tag="Tiny11" Click="OnModeCardClick"
-                                            AutomationProperties.Name="Tiny11" AutomationProperties.HelpText="Selecione Tiny11 e escolha uma ISO do Windows.">
+                                            AutomationProperties.Name="Equilibrado" AutomationProperties.HelpText="Selecione Equilibrado e escolha uma ISO do Windows.">
                                         <Grid RowSpacing="12">
                                             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                                             <FontIcon Glyph="&#xE7F4;" FontSize="64" HorizontalAlignment="Left"
                                                       Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                                             <StackPanel Grid.Row="1" Spacing="10">
-                                                <TextBlock Text="Tiny11" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                                                <TextBlock Text="Usa as remoções originais do Tiny11. Mantém o Windows Update e a recuperação."
+                                                <TextBlock Text="Equilibrado" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                                <TextBlock Text="Usa as remoções do modo Equilibrado. Mantém o Windows Update e a recuperação."
                                                            Style="{StaticResource Secondary}" FontSize="13"/>
                                             </StackPanel>
                                             <TextBlock Grid.Row="2" Text="Suporte a atualizações mantido" FontSize="12" TextWrapping="Wrap"
@@ -121,13 +120,13 @@
                                         </Grid>
                                     </Button>
                                     <Button x:Name="CoreModeCard" Grid.Column="1" Style="{StaticResource ModeCard}" Tag="Tiny11Core" Click="OnModeCardClick"
-                                            AutomationProperties.Name="Tiny11 Core" AutomationProperties.HelpText="Selecione Tiny11 Core e escolha uma ISO do Windows.">
+                                            AutomationProperties.Name="Mínimo" AutomationProperties.HelpText="Selecione Mínimo e escolha uma ISO do Windows.">
                                         <Grid RowSpacing="12">
                                             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                                             <FontIcon Glyph="&#xE8B7;" FontSize="64" HorizontalAlignment="Left"
                                                       Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                                             <StackPanel Grid.Row="1" Spacing="10">
-                                                <TextBlock Text="Tiny11 Core" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                                <TextBlock Text="Mínimo" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap"/>
                                                 <TextBlock Text="Remove o suporte a atualizações e recuperação e desativa o Defender."
                                                            Style="{StaticResource Secondary}" FontSize="13"/>
                                             </StackPanel>
@@ -155,7 +154,7 @@
                             <Grid Grid.Row="2" Padding="0,16,0,0">
                                 <StackPanel Spacing="8">
                                     <TextBlock Text="Windows 11 22H2 ou mais recente · x64 e ARM64 · Insider / Canary" FontSize="13" TextWrapping="Wrap"/>
-                                    <TextBlock Text="Teste imagens Core e personalizadas em uma máquina virtual antes de usar."
+                                    <TextBlock Text="Teste imagens Mínimo e personalizadas em uma máquina virtual antes de usar."
                                                Style="{StaticResource Secondary}" FontSize="12"/>
                                 </StackPanel>
                             </Grid>
@@ -215,41 +214,41 @@
                         </StackPanel>
                         <StackPanel x:Name="CleanupPanel" Visibility="Collapsed" Spacing="18">
                             <TextBlock Text="Componentes" Style="{StaticResource PageHeading}"/>
-                            <TextBlock Text="Escolha Tiny11, Tiny11 Core ou selecione suas remoções no modo Personalizado. Todas as alterações são registradas no log da criação." Style="{StaticResource Secondary}"/>
+                            <TextBlock Text="Escolha Equilibrado, Mínimo ou selecione suas remoções no modo Personalizado. Todas as alterações são registradas no log da criação." Style="{StaticResource Secondary}"/>
                             <Border Style="{StaticResource Card}">
                                 <StackPanel Spacing="14">
                                     <ComboBox x:Name="ModeChoice" Visibility="Collapsed" SelectionChanged="OnModeChanged" SelectedIndex="0">
-                                        <ComboBoxItem Content="Tiny11"/>
-                                        <ComboBoxItem Content="Tiny11 Core"/>
+                                        <ComboBoxItem Content="Equilibrado"/>
+                                        <ComboBoxItem Content="Mínimo"/>
                                         <ComboBoxItem Content="Personalizado"/>
                                     </ComboBox>
                                     <Grid x:Name="RemovalModeCards" ColumnSpacing="16">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                         <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="0"/><RowDefinition Height="0"/></Grid.RowDefinitions>
-                                        <Button x:Name="Tiny11Selection" Style="{StaticResource ModeCard}" MinHeight="140" Click="OnRemovalModeClick" Tag="Tiny11" AutomationProperties.Name="Usar Tiny11">
-                                            <StackPanel Spacing="12"><FontIcon Glyph="&#xE7F4;" FontSize="48" HorizontalAlignment="Left"/><TextBlock Text="Tiny11" FontSize="20" FontWeight="SemiBold"/><TextBlock Text="Remoções originais. Mantém suporte a atualizações." Style="{StaticResource Secondary}"/></StackPanel>
+                                        <Button x:Name="Tiny11Selection" Style="{StaticResource ModeCard}" MinHeight="140" Click="OnRemovalModeClick" Tag="Tiny11" AutomationProperties.Name="Usar Equilibrado">
+                                            <StackPanel Spacing="12"><FontIcon Glyph="&#xE7F4;" FontSize="48" HorizontalAlignment="Left"/><TextBlock Text="Equilibrado" FontSize="20" FontWeight="SemiBold"/><TextBlock Text="Remoções recomendadas. Mantém suporte a atualizações." Style="{StaticResource Secondary}"/></StackPanel>
                                         </Button>
-                                        <Button x:Name="CoreSelection" Grid.Column="1" Style="{StaticResource ModeCard}" MinHeight="140" Click="OnRemovalModeClick" Tag="Tiny11Core" AutomationProperties.Name="Usar Tiny11 Core">
-                                            <StackPanel Spacing="12"><FontIcon Glyph="&#xE8B7;" FontSize="48" HorizontalAlignment="Left"/><TextBlock Text="Tiny11 Core" FontSize="20" FontWeight="SemiBold"/><TextBlock Text="Apenas o essencial. Para máquinas virtuais de teste." Style="{StaticResource Secondary}"/></StackPanel>
+                                        <Button x:Name="CoreSelection" Grid.Column="1" Style="{StaticResource ModeCard}" MinHeight="140" Click="OnRemovalModeClick" Tag="Tiny11Core" AutomationProperties.Name="Usar Mínimo">
+                                            <StackPanel Spacing="12"><FontIcon Glyph="&#xE8B7;" FontSize="48" HorizontalAlignment="Left"/><TextBlock Text="Mínimo" FontSize="20" FontWeight="SemiBold"/><TextBlock Text="Apenas o essencial. Para máquinas virtuais de teste." Style="{StaticResource Secondary}"/></StackPanel>
                                         </Button>
                                         <Button x:Name="CustomSelection" Grid.Column="2" Style="{StaticResource ModeCard}" MinHeight="140" Click="OnRemovalModeClick" Tag="Custom" AutomationProperties.Name="Usar Personalizado">
                                             <StackPanel Spacing="12"><FontIcon Glyph="&#xE713;" FontSize="48" HorizontalAlignment="Left"/><TextBlock Text="Personalizado" FontSize="20" FontWeight="SemiBold"/><TextBlock Text="Escolha o que remover." Style="{StaticResource Secondary}"/></StackPanel>
                                         </Button>
                                     </Grid>
                                     <TextBlock x:Name="ModeDescription" Style="{StaticResource Secondary}"/>
-                                    <InfoBar x:Name="CoreWarning" IsOpen="False" IsClosable="False" Severity="Warning" Title="Core removes update and recovery support."
-                                             Message="Core deletes component files and WinRE, and disables Windows Update and Defender. You cannot add updates, languages or features afterward. Test the image in a VM."/>
-                                    <TextBlock x:Name="CoreConsentStatus" Visibility="Collapsed" Text="Será necessário aceitar as limitações do Core antes de continuar." Style="{StaticResource Secondary}"/>
+                                    <InfoBar x:Name="CoreWarning" IsOpen="False" IsClosable="False" Severity="Warning" Title="O modo Mínimo remove o suporte a atualizações e recuperação."
+                                             Message="O modo Mínimo exclui arquivos de componentes e o WinRE e desativa o Windows Update e o Defender. Não será possível adicionar atualizações, idiomas ou recursos depois. Teste a imagem em uma máquina virtual."/>
+                                    <TextBlock x:Name="CoreConsentStatus" Visibility="Collapsed" Text="Será necessário aceitar as limitações do Mínimo antes de continuar." Style="{StaticResource Secondary}"/>
                                     <TextBlock x:Name="SelectionCount" Style="{StaticResource Secondary}"/>
                                 </StackPanel>
                             </Border>
                             <StackPanel x:Name="CustomChoices" Visibility="Collapsed" Spacing="18">
-                            <ToggleSwitch x:Name="CustomCoreCheck" Header="Aplicar remoções do Core" OffContent="Manter atualizações, recuperação e Defender" OnContent="Remover atualizações, recuperação e Defender" Toggled="OnCustomCoreChanged"/>
+                            <ToggleSwitch x:Name="CustomCoreCheck" Header="Aplicar remoções do modo Mínimo" OffContent="Manter atualizações, recuperação e Defender" OnContent="Remover atualizações, recuperação e Defender" Toggled="OnCustomCoreChanged"/>
                             <TextBlock Text="Os grupos marcados serão removidos ou desativados. Os demais serão mantidos. Para itens individuais, use a lista de componentes abaixo."
                                        Style="{StaticResource Secondary}"/>
                             <ComboBox x:Name="OptionFilter" Header="Mostrar opções" SelectedIndex="0" SelectionChanged="OnOptionFilterChanged" HorizontalAlignment="Stretch">
                                 <ComboBoxItem Content="Todos"/><ComboBoxItem Content="Aplicativos pré-instalados"/><ComboBoxItem Content="Recursos opcionais"/>
-                                <ComboBoxItem Content="Configurações do Windows"/><ComboBoxItem Content="Avançado / criador original"/>
+                                <ComboBoxItem Content="Configurações do Windows"/><ComboBoxItem Content="Remoções avançadas"/>
                             </ComboBox>
                             <ItemsControl x:Name="OptionsList">
                                 <ItemsControl.ItemTemplate>
@@ -273,8 +272,8 @@
                                                Style="{StaticResource Secondary}"/>
                                     <Button Content="Listar todos os componentes…" Click="OnOpenExpert" HorizontalAlignment="Left"/>
                                     <StackPanel x:Name="ExpertPanel" Visibility="Collapsed" Spacing="12">
-                                        <InfoBar IsOpen="True" IsClosable="False" Severity="Warning" Title="Unsupported removals"
-                                                 Message="Removing protected or boot-critical items can create an unbootable or insecure image. Direct payload removal bypasses servicing. No dependency solver or boot guarantee is provided."/>
+                                        <InfoBar IsOpen="True" IsClosable="False" Severity="Warning" Title="Remoções sem suporte"
+                                                 Message="Remover itens protegidos ou essenciais pode impedir a inicialização ou comprometer a segurança. A remoção direta de arquivos ignora a manutenção. Não há resolução de dependências nem garantia de inicialização."/>
                                         <CheckBox x:Name="ExpertConsent" Content="Aceito o risco de criar uma imagem personalizada que não inicialize, não aceite manutenção ou seja insegura." Checked="OnChoicesChanged" Unchecked="OnChoicesChanged"/>
                                         <TextBox x:Name="InventorySearch" PlaceholderText="Pesquisar componentes" TextChanged="OnInventoryFilterChanged"
                                                  AutomationProperties.Name="Pesquisar componentes"/>
@@ -337,7 +336,7 @@
                                     <FontIcon Glyph="&#xE945;" FontSize="36" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                                     <StackPanel Grid.Column="1" Spacing="6">
                                         <TextBlock Text="Modo Turbo" FontSize="18" FontWeight="SemiBold"/>
-                                        <TextBlock Text="Agrupa remoções de recursos e funcionalidades e reduz o processamento dos logs. Core e WIM rápido usam uma imagem de trabalho mais rápida. Consome mais CPU e espaço temporário; a compactação final segue a opção selecionada." Style="{StaticResource Secondary}"/>
+                                        <TextBlock Text="Agrupa remoções de recursos e funcionalidades e reduz o processamento dos logs. Mínimo e WIM rápido usam uma imagem de trabalho mais rápida. Consome mais CPU e espaço temporário; a compactação final segue a opção selecionada." Style="{StaticResource Secondary}"/>
                                     </StackPanel>
                                     <ToggleSwitch x:Name="TurboCheck" Grid.Column="2" OffContent="Desativado" OnContent="Ativado" AutomationProperties.Name="Modo Turbo"/>
                                 </Grid>
@@ -359,7 +358,7 @@
                                     <FontIcon Glyph="&#xE8B7;" FontSize="36" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                                     <StackPanel Grid.Column="1" Spacing="6">
                                         <TextBlock Text="Omitir arquivos de instalação do .NET 3.5" FontSize="18" FontWeight="SemiBold"/>
-                                        <TextBlock Text="Exclui sources\sxs da ISO. Você ainda pode incluir o .NET 3.5 agora; ativá-lo depois exige mídia compatível ou o Windows Update. O Core não permite adicioná-lo depois." Style="{StaticResource Secondary}"/>
+                                        <TextBlock Text="Exclui sources\sxs da ISO. Você ainda pode incluir o .NET 3.5 agora; ativá-lo depois exige mídia compatível ou o Windows Update. O Mínimo não permite adicioná-lo depois." Style="{StaticResource Secondary}"/>
                                     </StackPanel>
                                     <ToggleSwitch x:Name="OmitSetupCheck" Grid.Column="2" OffContent="Manter" OnContent="Omitir" AutomationProperties.Name="Omitir arquivos de instalação do .NET 3.5"/>
                                 </Grid>
@@ -410,8 +409,8 @@
                                     <TextBox x:Name="ReviewText" IsReadOnly="True" TextWrapping="Wrap" BorderThickness="0" Background="Transparent" FontSize="13"/>
                                 </Expander>
                             </Border>
-                            <InfoBar IsOpen="True" IsClosable="False" Severity="Informational" Title="Build-dependent settings"
-                                     Message="Some policies apply only to particular editions or builds. Feature updates can reinstall apps. Local-account and hardware bypasses are best effort. Test the resulting ISO before relying on it."/>
+                            <InfoBar IsOpen="True" IsClosable="False" Severity="Informational" Title="Configurações dependentes da versão"
+                                     Message="Algumas políticas se aplicam apenas a determinadas edições ou versões. Atualizações de recursos podem reinstalar aplicativos. Conta local e dispensa de requisitos dependem da versão. Teste a ISO antes de usar."/>
                             <StackPanel Orientation="Horizontal" Spacing="12">
                                 <Button Content="Salvar configuração" Click="OnSaveRecipe"/>
                                 <Button Content="Carregar configuração" Click="OnLoadRecipe"/>
@@ -468,7 +467,7 @@
                                             <TextBlock x:Name="ResultMetrics" Style="{StaticResource Secondary}"/>
                                         </StackPanel>
                                     </Grid>
-                                    <InfoBar x:Name="ResultWarnings" IsOpen="False" IsClosable="False" Severity="Warning" Title="Finished with warnings"/>
+                                    <InfoBar x:Name="ResultWarnings" IsOpen="False" IsClosable="False" Severity="Warning" Title="Concluído com avisos"/>
                                     <StackPanel Spacing="16">
                                         <TextBox x:Name="ResultPath" Header="ISO de saída" IsReadOnly="True"/>
                                         <TextBox x:Name="ResultHash" Header="SHA-256" IsReadOnly="True" FontFamily="Consolas"/>

@@ -1,4 +1,4 @@
-# Tiny11 Builder em português do Brasil
+# Fluent11 ISO Studio em português do Brasil
 
 Esta edição do fork traduz o assistente nativo **WinUI 3** para português do Brasil.
 Mantém Mica, temas claro/escuro, alto contraste e navegação por teclado.
@@ -6,15 +6,15 @@ Mantém Mica, temas claro/escuro, alto contraste e navegação por teclado.
 ## Executar
 
 1. Extraia **todo** o ZIP para uma pasta.
-2. Abra `Tiny11Builder.exe` e autorize a solicitação de administrador.
-3. Escolha Tiny11, Tiny11 Core ou Personalizado e selecione uma ISO do Windows.
+2. Abra `Fluent11ISOStudio.exe` e autorize a solicitação de administrador.
+3. Escolha Equilibrado, Mínimo ou Personalizado e selecione uma ISO do Windows.
 4. Confira a edição, os componentes, a área de trabalho e o arquivo de saída.
 5. Crie a imagem e teste a ISO em uma máquina virtual antes de instalar.
 
 O pacote x64 é destinado a PCs Intel/AMD. O aplicativo inclui suas dependências;
 não é necessário instalar o SDK .NET para executá-lo.
 
-**Tiny11 Core remove o suporte a atualizações e recuperação e desativa o Defender.**
+**Mínimo remove o suporte a atualizações e recuperação e desativa o Defender.**
 As remoções avançadas podem impedir a inicialização. As confirmações de risco
 e os pontos seguros de cancelamento foram preservados.
 
