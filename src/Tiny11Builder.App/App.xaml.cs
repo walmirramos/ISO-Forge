@@ -13,7 +13,6 @@ public partial class App : Application
         CultureInfo.DefaultThreadCurrentUICulture = portuguese;
         CultureInfo.CurrentCulture = portuguese;
         CultureInfo.CurrentUICulture = portuguese;
-        Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = "pt-BR";
         InitializeComponent();
     }
     protected override void OnLaunched(LaunchActivatedEventArgs args)
