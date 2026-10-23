@@ -76,8 +76,8 @@ public sealed partial class MainWindow : Window
             ShowNotice(UiText.Get("An operation is still running."), cancelRequested ? UiText.Get("It is being cancelled. Wait for it to stop before closing.") :
                 UiText.Format($"Choose {CancelPrompts.ButtonLabel} and wait for the image operation to finish before closing."), InfoBarSeverity.Warning);
         };
-        WorkspaceBox.Text = @"C:\Fluent11";
-        OutputBox.Text = Path.Combine(WorkspaceBox.Text, $"fluent11-{DateTime.Now:yyyyMMdd-HHmmss}.iso");
+        WorkspaceBox.Text = @"C:\ISOForge";
+        OutputBox.Text = Path.Combine(WorkspaceBox.Text, $"isoforge-{DateTime.Now:yyyyMMdd-HHmmss}.iso");
         BuildStages.ItemsSource = board.Stages;
         progressTimer.Tick += (_, _) => { FlushBuildProgress(); DrainDownload(); };
         // Desktop apps cannot subscribe to AccessibilitySettings.HighContrastChanged (it throws), so
@@ -271,7 +271,7 @@ public sealed partial class MainWindow : Window
             completed = false;
             coreAcknowledged = false;
             UpdateModePresentation();
-            OutputBox.Text = Path.Combine(Path.GetDirectoryName(OutputBox.Text)!, $"fluent11-{DateTime.Now:yyyyMMdd-HHmmss}.iso");
+            OutputBox.Text = Path.Combine(Path.GetDirectoryName(OutputBox.Text)!, $"isoforge-{DateTime.Now:yyyyMMdd-HHmmss}.iso");
             ResetBuildPage();
             GoStep(1);
             return;
@@ -584,7 +584,7 @@ public sealed partial class MainWindow : Window
     private async void OnChooseWorkspace(object sender, RoutedEventArgs args) =>
         await RunOperation(OperationKind.Choose, async _ => { var path = await PickFolder(); if (path is not null) WorkspaceBox.Text = path; });
     private async void OnChooseOutput(object sender, RoutedEventArgs args) =>
-        await RunOperation(OperationKind.Choose, async _ => { var path = await SaveFile("fluent11", ".iso"); if (path is not null) OutputBox.Text = path; });
+        await RunOperation(OperationKind.Choose, async _ => { var path = await SaveFile("isoforge", ".iso"); if (path is not null) OutputBox.Text = path; });
 
     private void OnSourceChanged(object sender, TextChangedEventArgs args)
     {
@@ -1353,7 +1353,7 @@ public sealed partial class MainWindow : Window
     {
         var recipe = CreateRecipe();
         recipe.ValidateOptions();
-        var path = await SaveFile("fluent11-configuracao", ".json");
+        var path = await SaveFile("isoforge-configuracao", ".json");
         if (path is not null) { recipe.Write(path); ShowNotice(UiText.Get("Recipe saved."), UiText.Get("It contains selections and local paths, not downloaded media or credentials.")); }
     });
     private async void OnLoadRecipe(object sender, RoutedEventArgs args) => await RunOperation(OperationKind.Recipe, async _ =>

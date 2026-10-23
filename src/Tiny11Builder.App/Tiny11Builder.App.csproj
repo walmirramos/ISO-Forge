@@ -3,10 +3,10 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows10.0.26100.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
-    <AssemblyName>Fluent11ISOStudio</AssemblyName>
-    <Product>Fluent11 ISO Studio</Product>
-    <Title>Fluent11 ISO Studio</Title>
-    <Version>0.1.1-ptbr.2</Version>
+    <AssemblyName>ISOForge</AssemblyName>
+    <Product>ISO Forge</Product>
+    <Title>ISO Forge</Title>
+    <Version>0.1.1-isoforge.1</Version>
     <RootNamespace>Tiny11Builder.App</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x64;ARM64</Platforms>

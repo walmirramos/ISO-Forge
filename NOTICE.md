@@ -1,19 +1,11 @@
-# Attribution and distribution
+# Atribuição e distribuição
 
-This application is a native rewrite based on the behavior of
-[ntdevlabs/tiny11builder](https://github.com/ntdevlabs/tiny11builder).
-The original PowerShell builders and their notices are retained.
-The [S9 WoA installer](https://github.com/ntdevlabs/exynos9810-woa) was a design
-reference; its source is not bundled with this application.
+O ISO Forge é uma personalização em português brasileiro por **Dubbox**, baseada no comportamento de [ntdevlabs/tiny11builder](https://github.com/ntdevlabs/tiny11builder). Os criadores PowerShell e seus avisos foram preservados no repositório.
 
-This upstream checkout contains no standalone license file. No new license
-has been assigned to the upstream material by this rewrite. Confirm permission
-and choose an appropriate license for your own contributions before public
-redistribution; a public GitHub repository alone does not grant redistribution
-rights.
+O [instalador S9 WoA](https://github.com/ntdevlabs/exynos9810-woa) serviu como referência de design; seu código-fonte não acompanha o aplicativo.
 
-Release packages include the .NET and Windows App SDK runtime dependencies.
-Their license texts, third-party notices, or NuGet license metadata are included
-under `licenses`.
-Windows installation media and ADK executables are not bundled. Windows
-downloads, use and activation remain subject to Microsoft's terms.
+A base recebida não contém um arquivo de licença independente. Esta personalização não atribui nova licença ao material de origem. Confirme as permissões antes de redistribuir: um repositório público, por si só, não concede direitos de redistribuição.
+
+Os pacotes incluem dependências do .NET e do Windows App SDK. Textos de licença, avisos de terceiros ou metadados NuGet acompanham o pacote na pasta `licenses`.
+
+Mídias do Windows e executáveis do ADK não estão incluídos. Download, uso e ativação do Windows continuam sujeitos aos termos da Microsoft. ISO Forge é um projeto independente, não um produto oficial da Microsoft.

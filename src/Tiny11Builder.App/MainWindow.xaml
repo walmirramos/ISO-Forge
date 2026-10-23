@@ -2,14 +2,14 @@
     x:Class="Tiny11Builder.App.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="Fluent11 ISO Studio">
+    Title="ISO Forge">
     <Window.SystemBackdrop><MicaBackdrop Kind="BaseAlt"/></Window.SystemBackdrop>
     <Grid x:Name="Root" Language="pt-BR">
         <Grid.RowDefinitions><RowDefinition Height="48"/><RowDefinition Height="*"/></Grid.RowDefinitions>
         <Grid x:Name="TitleArea" Padding="24,0,140,0" ColumnSpacing="12">
             <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
             <FontIcon Glyph="&#xE7F8;" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
-            <TextBlock Grid.Column="1" Text="Fluent11 ISO Studio" VerticalAlignment="Center" FontWeight="SemiBold"/>
+            <TextBlock Grid.Column="1" Text="ISO Forge" VerticalAlignment="Center" FontWeight="SemiBold"/>
         </Grid>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions><ColumnDefinition Width="248"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>

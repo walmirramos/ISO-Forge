@@ -1,4 +1,4 @@
-name: Build and package
+name: Compilar e empacotar
 
 on:
   push:
@@ -16,7 +16,7 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-      - name: Run tests
+      - name: Executar testes
         run: dotnet test .\tests\Tiny11Builder.Core.Tests\Tiny11Builder.Core.Tests.csproj -c Release --logger "trx;LogFileName=tests.trx"
       - uses: actions/upload-artifact@v4
         if: always()
@@ -37,11 +37,11 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-      - name: Build verified release archive
+      - name: Gerar pacote portátil verificado
         run: .\scripts\package.ps1 -Architecture ${{ matrix.architecture }}
       - uses: actions/upload-artifact@v4
         with:
-          name: Tiny11Builder-win-${{ matrix.architecture }}
+          name: ISOForge-win-${{ matrix.architecture }}
           path: |
             artifacts\release\*.zip
             artifacts\release\*.sha256

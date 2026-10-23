@@ -10,7 +10,7 @@ $root = Split-Path $PSScriptRoot -Parent
 $project = Join-Path $root 'src\Tiny11Builder.App\Tiny11Builder.App.csproj'
 [xml]$projectXml = Get-Content -LiteralPath $project -Raw
 $version = [string]$projectXml.Project.PropertyGroup.Version
-$name = "Fluent11ISOStudio-$version-win-$Architecture"
+$name = "ISOForge-$version-win-$Architecture"
 $releases = Join-Path $root 'artifacts\release'
 $archive = Join-Path $releases "$name.zip"
 $checksum = "$archive.sha256"
@@ -35,14 +35,14 @@ try {
         Where-Object { Test-Path $_ } | Select-Object -First 1
     if (!$mt) { throw 'Windows SDK mt.exe is required to verify the packaged administrator manifest.' }
     $manifest = Join-Path $stage 'embedded.manifest'
-    & $mt -nologo "-inputresource:$publish\Fluent11ISOStudio.exe;#1" "-out:$manifest"
+    & $mt -nologo "-inputresource:$publish\ISOForge.exe;#1" "-out:$manifest"
     if ($LASTEXITCODE -ne 0) { throw 'Cannot extract the executable manifest.' }
     [xml]$embedded = Get-Content -LiteralPath $manifest -Raw
     $level = $embedded.SelectSingleNode("//*[local-name()='requestedExecutionLevel']")
     if (!$level -or $level.level -ne 'requireAdministrator' -or $level.uiAccess -ne 'false') {
         throw 'The executable does not require administrator approval.'
     }
-    $executable = [IO.File]::ReadAllBytes((Join-Path $publish 'Fluent11ISOStudio.exe'))
+    $executable = [IO.File]::ReadAllBytes((Join-Path $publish 'ISOForge.exe'))
     $pe = [BitConverter]::ToInt32($executable, 60)
     $expected = if ($Architecture -eq 'x64') { 0x8664 } else { 0xAA64 }
     if ([BitConverter]::ToUInt16($executable, $pe + 4) -ne $expected) { throw 'Incorrect executable architecture.' }
@@ -53,7 +53,7 @@ try {
     Copy-Item -LiteralPath (Join-Path $root 'docs') -Destination (Join-Path $publish 'docs') -Recurse
     $cache = if ($env:NUGET_PACKAGES) { $env:NUGET_PACKAGES } else { Join-Path $env:USERPROFILE '.nuget\packages' }
     $licenses = Join-Path $publish 'licenses'
-    $deps = Get-Content -LiteralPath (Join-Path $publish 'Fluent11ISOStudio.deps.json') -Raw | ConvertFrom-Json
+    $deps = Get-Content -LiteralPath (Join-Path $publish 'ISOForge.deps.json') -Raw | ConvertFrom-Json
     $target = $deps.targets.PSObject.Properties[$deps.runtimeTarget.name].Value
     foreach ($library in $deps.libraries.PSObject.Properties) {
         if ($library.Value.type -ne 'package' -and $library.Name -notlike 'runtimepack.*') { continue }
