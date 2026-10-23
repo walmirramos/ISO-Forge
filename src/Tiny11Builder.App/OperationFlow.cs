@@ -34,7 +34,7 @@ internal static class OperationOutcomes
         var recovery = failure is not null && NeedsRecovery(failure);
         var (title, message) = cancelled ? Cancelled(kind, canResume) : Failed(kind, ErrorText.Reason(error), canResume);
         if (recovery)
-            message += " The job's mounted copy could not be discarded. Use Recover workspace and choose this job's job.json.";
+            message += UiText.Get(" The job's mounted copy could not be discarded. Use Recover workspace and choose this job's job.json.");
         return new(kind, cancelled, title, message, cancelled && !recovery ? NoticeLevel.Warning : NoticeLevel.Error,
             failure?.WorkDirectory, error.ToString(), recovery, failure is not null && !recovery ? CleanupProblems(failure) : "");
     }
@@ -45,7 +45,7 @@ internal static class OperationOutcomes
     {
         if (failure.InnerException is not AggregateException { InnerExceptions.Count: > 1 } aggregate) return "";
         var reasons = aggregate.InnerExceptions.Skip(1).Select(ErrorText.Reason).Distinct(StringComparer.Ordinal);
-        return ErrorText.Clip("Some cleanup steps reported problems: " + string.Join(" ", reasons), 320);
+        return ErrorText.Clip(UiText.Get("Some cleanup steps reported problems: ") + string.Join(" ", reasons), 320);
     }
 
     public static bool IsCancellation(OperationKind kind, Exception error) => error switch
@@ -61,27 +61,27 @@ internal static class OperationOutcomes
 
     private static (string Title, string Message) Cancelled(OperationKind kind, bool canResume) => kind switch
     {
-        OperationKind.Build => ("Build cancelled.", "Your source was not changed. Working files and logs are kept." +
-            (canResume ? " Saved progress can be resumed." : "")),
-        OperationKind.Resume => ("Resume cancelled.", "Saved progress and logs are kept." + (canResume ? " You can resume again." : "")),
-        OperationKind.Inspect => ("Inspection cancelled.", "The image was not changed."),
-        OperationKind.Inventory => ("Component list cancelled.", "The image was not changed."),
-        OperationKind.Download => ("Download cancelled.", "Partial downloads are kept, so you can continue later. No source media was modified."),
-        OperationKind.Recover => ("Recovery cancelled.", "Run Recover workspace again to finish cleaning up this job."),
-        OperationKind.Elevate => ("Restart cancelled.", "The app is still running without administrator privileges."),
-        _ => ("Cancelled.", "Nothing was changed.")
+        OperationKind.Build => (UiText.Get("Build cancelled."), UiText.Get("Your source was not changed. Working files and logs are kept.") +
+            (canResume ? UiText.Get(" Saved progress can be resumed.") : "")),
+        OperationKind.Resume => (UiText.Get("Resume cancelled."), UiText.Get("Saved progress and logs are kept.") + (canResume ? UiText.Get(" You can resume again.") : "")),
+        OperationKind.Inspect => (UiText.Get("Inspection cancelled."), UiText.Get("The image was not changed.")),
+        OperationKind.Inventory => (UiText.Get("Component list cancelled."), UiText.Get("The image was not changed.")),
+        OperationKind.Download => (UiText.Get("Download cancelled."), UiText.Get("Partial downloads are kept, so you can continue later. No source media was modified.")),
+        OperationKind.Recover => (UiText.Get("Recovery cancelled."), UiText.Get("Run Recover workspace again to finish cleaning up this job.")),
+        OperationKind.Elevate => (UiText.Get("Restart cancelled."), UiText.Get("The app is still running without administrator privileges.")),
+        _ => (UiText.Get("Cancelled."), UiText.Get("Nothing was changed."))
     };
 
     private static (string Title, string Message) Failed(OperationKind kind, string reason, bool canResume) => kind switch
     {
-        OperationKind.Build => ("Build failed.", reason + (canResume ? " Saved progress can be resumed." : "")),
-        OperationKind.Resume => ("Resume failed.", reason + (canResume ? " Saved progress is kept, so you can resume again." : "")),
-        OperationKind.Inspect => ("The image could not be inspected.", reason),
-        OperationKind.Inventory => ("The component list could not be loaded.", reason),
-        OperationKind.Download => ("The download did not complete.", reason),
-        OperationKind.Recover => ("Recovery did not complete.", reason),
-        OperationKind.Elevate => ("The app could not restart as administrator.", reason),
-        _ => ("The operation did not complete.", reason)
+        OperationKind.Build => (UiText.Get("Build failed."), reason + (canResume ? UiText.Get(" Saved progress can be resumed.") : "")),
+        OperationKind.Resume => (UiText.Get("Resume failed."), reason + (canResume ? UiText.Get(" Saved progress is kept, so you can resume again.") : "")),
+        OperationKind.Inspect => (UiText.Get("The image could not be inspected."), reason),
+        OperationKind.Inventory => (UiText.Get("The component list could not be loaded."), reason),
+        OperationKind.Download => (UiText.Get("The download did not complete."), reason),
+        OperationKind.Recover => (UiText.Get("Recovery did not complete."), reason),
+        OperationKind.Elevate => (UiText.Get("The app could not restart as administrator."), reason),
+        _ => (UiText.Get("The operation did not complete."), reason)
     };
 }
 
@@ -101,7 +101,7 @@ internal static class ErrorText
     public static string Reason(Exception error)
     {
         var summary = Summary(Primary(error).Message);
-        return summary.Length > 0 ? summary : "No further details were reported.";
+        return summary.Length > 0 ? UiText.Display(summary) : UiText.Get("No further details were reported.");
     }
 
     public static string Summary(string? text, int limit = NoticeLimit)
@@ -194,9 +194,9 @@ internal static class ResumeSupport
 {
     public const string JobFileName = "job.json";
 
-    public const string NoCheckpoint =
-        "This build has no saved progress to resume. It was started before progress was saved, or it stopped before its image was saved, " +
-        "so it can't be continued. Nothing was changed, and its logs and files are kept.";
+    public static string NoCheckpoint =>
+        UiText.Get("This build has no saved progress to resume. It was started before progress was saved, or it stopped before its image was saved, ") +
+        UiText.Get("so it can't be continued. Nothing was changed, and its logs and files are kept.");
 
     // hasCheckpoint is advisory: it only decides what to offer. The engine verifies the saved work itself.
     public static ResumeCandidate Inspect(string jobFile, Func<string, bool> hasCheckpoint, string recipeFileName = "recipe.json")
@@ -209,18 +209,18 @@ internal static class ResumeSupport
         }
         catch (Exception error) when (error is ArgumentException or NotSupportedException or PathTooLongException)
         {
-            return new(jobFile, "", null, "That is not a valid job file path.");
+            return new(jobFile, "", null, UiText.Get("That is not a valid job file path."));
         }
         if (!Path.GetFileName(file).Equals(JobFileName, StringComparison.OrdinalIgnoreCase))
-            return new(file, directory, null, "Choose the job.json file inside the build's tiny11-… folder.");
+            return new(file, directory, null, UiText.Get("Choose the job.json file inside the build's tiny11-… folder."));
         if (!hasCheckpoint(directory)) return new(file, directory, null, NoCheckpoint);
         var recipeFile = Path.Combine(directory, recipeFileName);
         if (!File.Exists(recipeFile))
-            return new(file, directory, null, "This job's saved recipe is missing, so it can't be resumed.");
+            return new(file, directory, null, UiText.Get("This job's saved recipe is missing, so it can't be resumed."));
         try { return new(file, directory, BuildRecipe.Read(recipeFile), null); }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException or InvalidDataException or System.Text.Json.JsonException)
         {
-            return new(file, directory, null, "This job's saved recipe could not be read. " + ErrorText.Reason(error));
+            return new(file, directory, null, UiText.Get("This job's saved recipe could not be read. ") + ErrorText.Reason(error));
         }
     }
 
@@ -229,25 +229,25 @@ internal static class ResumeSupport
         var mode = CleanupCatalog.ModeForRecipe(recipe) switch
         {
             BuildMode.Tiny11 => "Tiny11", BuildMode.Tiny11Core => "Tiny11 Core",
-            _ => recipe.Flavor == BuildFlavor.Core ? "Custom with Core removals" : "Custom"
+            _ => recipe.Flavor == BuildFlavor.Core ? UiText.Get("Custom with Core removals") : UiText.Get("Custom")
         };
         var compression = recipe.Compression switch
         {
-            Compression.Recovery => "Recovery ESD", Compression.Maximum => "Maximum WIM", _ => "Fast WIM"
+            Compression.Recovery => UiText.Get("Recovery ESD"), Compression.Maximum => UiText.Get("Maximum WIM"), _ => UiText.Get("Fast WIM")
         };
         var text = new StringBuilder();
-        text.AppendLine($"Output: {recipe.OutputPath}");
-        text.AppendLine($"Mode: {mode} · {recipe.SelectedOptions.Length} removal groups · {recipe.ExpertActions.Length} individual actions");
-        text.AppendLine($"Compression: {compression}");
+        text.AppendLine(UiText.Format($"Output: {recipe.OutputPath}"));
+        text.AppendLine(UiText.Format($"Mode: {mode} · {recipe.SelectedOptions.Length} removal groups · {recipe.ExpertActions.Length} individual actions"));
+        text.AppendLine(UiText.Format($"Compression: {compression}"));
         text.AppendLine();
-        text.AppendLine("The removal choices from the original build stay as they were. They can't be changed when resuming.");
+        text.AppendLine(UiText.Get("The removal choices from the original build stay as they were. They can't be changed when resuming."));
         if (recipe.Flavor == BuildFlavor.Core)
-            text.AppendLine("Core: no Windows Update, no Microsoft Defender, no recovery environment. Use only in an isolated test VM.");
+            text.AppendLine(UiText.Get("Core: no Windows Update, no Microsoft Defender, no recovery environment. Use only in an isolated test VM."));
         if (SetupLabels.Legacy(recipe) is { } legacy) text.AppendLine(legacy + ".");
         if (recipe.ExpertActions.Length > 0)
-            text.AppendLine("Individual removals include protected items. The image may not boot.");
+            text.AppendLine(UiText.Get("Individual removals include protected items. The image may not boot."));
         text.AppendLine();
-        text.Append("The saved progress is verified first. If anything does not match, nothing is changed.");
+        text.Append(UiText.Get("The saved progress is verified first. If anything does not match, nothing is changed."));
         return text.ToString();
     }
 }
@@ -262,18 +262,19 @@ internal static class SetupLabels
         if (!SetupInstaller.RequiresLegacy(recipe)) return null;
         var core = recipe.Flavor == BuildFlavor.Core;
         var payload = recipe.ExpertActions.Any(a => a.Kind == ImageItemKind.ComponentPayload && a.Mode == ExpertActionMode.Remove);
-        return core && payload ? "Core and component-payload removals" : core ? "Core removals" :
-            payload ? "component-payload removals" : "the selected removals";
+        return core && payload ? UiText.Get("Core and component-payload removals") : core ? UiText.Get("Core removals") :
+            payload ? UiText.Get("component-payload removals") : UiText.Get("the selected removals");
     }
 
     public static string? Legacy(BuildRecipe recipe) =>
-        LegacyReason(recipe) is { } reason ? $"Legacy installer: automatic (needed for {reason})" : null;
+        LegacyReason(recipe) is { } reason ? UiText.Format($"Legacy installer: automatic (needed for {reason})") : null;
 }
 
 // "3 of 7 stages done": the count shown over the stage history, read from the same rows the history draws.
 internal static class StageSummary
 {
-    private static bool IsDone(BuildStageChoice stage) => stage.Status is "Complete" or "Done earlier";
+    private static bool IsDone(BuildStageChoice stage) =>
+        stage.Status == UiText.Get("Complete") || stage.Status == UiText.Get("Done earlier");
 
     public static string Describe(BuildStageBoard board)
     {
@@ -281,8 +282,8 @@ internal static class StageSummary
         var done = stages.Count(IsDone);
         var failed = stages.Count(stage => stage.Operations.Any(o => o.State == BuildOperationState.Failed));
         var cancelled = stages.Any(stage => stage.Operations.Any(o => o.State == BuildOperationState.Cancelled));
-        var text = done == stages.Length ? $"All {stages.Length} stages done" : $"{done} of {stages.Length} stages done";
-        return failed > 0 ? $"{text} · {failed} failed" : cancelled ? text + " · cancelled" : text;
+        var text = done == stages.Length ? UiText.Format($"All {stages.Length} stages done") : UiText.Format($"{done} of {stages.Length} stages done");
+        return failed > 0 ? UiText.Format($"{text} · {failed} failed") : cancelled ? text + UiText.Get(" · cancelled") : text;
     }
 }
 
@@ -304,15 +305,15 @@ internal sealed record OperationEnd(OperationKind Kind, RunResult Result, bool R
     public bool NeedsAttention => RecoveryRequired || Result == RunResult.Failed;
 
     public static OperationEnd Succeeded(OperationKind kind) =>
-        new(kind, RunResult.Succeeded, false, "Finished.", "", null, "");
+        new(kind, RunResult.Succeeded, false, UiText.Get("Finished."), "", null, "");
 
     public static OperationEnd From(OperationOutcome outcome) =>
         new(outcome.Kind, outcome.Cancelled ? RunResult.Cancelled : RunResult.Failed, outcome.RecoveryRequired,
             outcome.Title, outcome.Message, outcome.WorkDirectory, outcome.Details, outcome.Warning);
 
     public static OperationEnd Unknown(OperationKind kind) =>
-        new(kind, RunResult.Failed, false, "The operation did not complete.",
-            "It ended without saying how, so it is not shown as finished. Check the logs.", null, "");
+        new(kind, RunResult.Failed, false, UiText.Get("The operation did not complete."),
+            UiText.Get("It ended without saying how, so it is not shown as finished. Check the logs."), null, "");
 }
 
 // One call of RunOperation as seen by whoever may cancel it. A prompt is bound to the run it was opened for, so it can
@@ -378,7 +379,7 @@ internal sealed class OperationRun
         catch (AggregateException failure)
         {
             // The token is cancelled all the same, but a step that reacts to it failed. That is shown, never swallowed.
-            NoteWarning("The cancel was sent, but a step that reacts to it failed: " + ErrorText.Reason(failure));
+            NoteWarning(UiText.Get("The cancel was sent, but a step that reacts to it failed: ") + ErrorText.Reason(failure));
         }
         return CancelRequest.Requested;
     }
@@ -401,7 +402,7 @@ internal sealed class OperationRun
             end ??= OperationEnd.Unknown(Kind);
         }
         try { source.Dispose(); }
-        catch (Exception error) { NoteWarning("The cancel token could not be released: " + ErrorText.Reason(error)); }
+        catch (Exception error) { NoteWarning(UiText.Get("The cancel token could not be released: ") + ErrorText.Reason(error)); }
         finally { settled.TrySetResult(); }
     }
 
@@ -419,48 +420,48 @@ internal static class CancelPrompts
 {
     // The caption of the shell button for every busy operation, exactly as the user named it. What it would cancel is
     // in its hint (the tooltip and help text), so the caption is the same everywhere.
-    public const string ButtonLabel = "Cancel safely";
+    public static string ButtonLabel => UiText.Get("Cancel safely");
 
     public static CancelCopy For(OperationKind kind) => kind switch
     {
-        OperationKind.Build => new("build", "Cancel this build?",
-            "The build stops at the next safe point. That can take a few minutes, because the image operation that is running is allowed to finish first. " +
-            "Your source is never changed. The mounted copy is safely unmounted; working files, saved progress and logs are kept.",
-            "Cancel build", "Keep building", "Stops the build at the next safe point. Your source is never changed.",
-            "Cancelling the build", "Waiting for the current operation to finish", "The ISO and build report were saved.", true),
-        OperationKind.Resume => new("resume", "Cancel this resume?",
-            "The resume stops at the next safe point. That can take a few minutes, because the image operation that is running is allowed to finish first. " +
-            "The mounted copy is safely unmounted; working files, saved progress and logs are kept, so you can resume again.",
-            "Cancel resume", "Keep resuming", "Stops the resume at the next safe point. Saved progress is kept.",
-            "Cancelling the resume", "Waiting for the current operation to finish", "The ISO and build report were saved.", true),
-        OperationKind.Download => new("download", "Cancel this download?",
-            "The download stops. The partial file is kept, so you can continue it later. No source media is modified.",
-            "Cancel download", "Keep downloading", "Stops the download. The partial file is kept.",
-            "Cancelling the download", "Stopping the download", "The download finished.", false),
-        OperationKind.Inspect => new("inspection", "Cancel inspecting this image?",
-            "Inspection stops after the current step. The image is not changed.",
-            "Cancel inspection", "Continue", "Stops inspecting the image. Nothing is changed.",
-            "Cancelling the inspection", "Waiting for the current step to finish", "The image was inspected.", false),
-        OperationKind.Inventory => new("component list", "Cancel listing components?",
-            "Listing stops at the next safe point. The read-only mount of the image is discarded and the image is not changed.",
-            "Cancel listing", "Continue", "Stops listing components. The image is not changed.",
-            "Cancelling the component list", "Waiting for the current operation to finish", "The component list was loaded.", true),
-        OperationKind.Recover => new("recovery", "Cancel this recovery?",
-            "Recovery stops at the next safe point. Run Recover workspace again to finish cleaning up this job.",
-            "Cancel recovery", "Keep recovering", "Stops the recovery at the next safe point.",
-            "Cancelling the recovery", "Waiting for the current operation to finish", "The workspace was recovered.", false),
-        OperationKind.Elevate => new("restart", "Cancel the restart?",
-            "The app keeps running without administrator privileges.",
-            "Cancel restart", "Continue", "Stops restarting the app as administrator.",
-            "Cancelling the restart", "Waiting for the current step to finish", "The app was restarted.", false),
-        OperationKind.Check => new("check", "Cancel the check?",
-            "The check stops. Nothing has been changed.",
-            "Cancel check", "Continue", "Stops checking your choices. Nothing is changed.",
-            "Cancelling the check", "Waiting for the current step to finish", "The check finished.", false),
-        _ => new("operation", "Cancel this operation?",
-            "The operation stops after the current step. Nothing has been changed.",
-            "Cancel", "Continue", "Stops the running operation.",
-            "Cancelling", "Waiting for the current step to finish", "The operation finished.", false)
+        OperationKind.Build => new(UiText.Get("build"), UiText.Get("Cancel this build?"),
+            UiText.Get("The build stops at the next safe point. That can take a few minutes, because the image operation that is running is allowed to finish first. ") +
+            UiText.Get("Your source is never changed. The mounted copy is safely unmounted; working files, saved progress and logs are kept."),
+            UiText.Get("Cancel build"), UiText.Get("Keep building"), UiText.Get("Stops the build at the next safe point. Your source is never changed."),
+            UiText.Get("Cancelling the build"), UiText.Get("Waiting for the current operation to finish"), UiText.Get("The ISO and build report were saved."), true),
+        OperationKind.Resume => new(UiText.Get("resume"), UiText.Get("Cancel this resume?"),
+            UiText.Get("The resume stops at the next safe point. That can take a few minutes, because the image operation that is running is allowed to finish first. ") +
+            UiText.Get("The mounted copy is safely unmounted; working files, saved progress and logs are kept, so you can resume again."),
+            UiText.Get("Cancel resume"), UiText.Get("Keep resuming"), UiText.Get("Stops the resume at the next safe point. Saved progress is kept."),
+            UiText.Get("Cancelling the resume"), UiText.Get("Waiting for the current operation to finish"), UiText.Get("The ISO and build report were saved."), true),
+        OperationKind.Download => new(UiText.Get("download"), UiText.Get("Cancel this download?"),
+            UiText.Get("The download stops. The partial file is kept, so you can continue it later. No source media is modified."),
+            UiText.Get("Cancel download"), UiText.Get("Keep downloading"), UiText.Get("Stops the download. The partial file is kept."),
+            UiText.Get("Cancelling the download"), UiText.Get("Stopping the download"), UiText.Get("The download finished."), false),
+        OperationKind.Inspect => new(UiText.Get("inspection"), UiText.Get("Cancel inspecting this image?"),
+            UiText.Get("Inspection stops after the current step. The image is not changed."),
+            UiText.Get("Cancel inspection"), UiText.Get("Continue"), UiText.Get("Stops inspecting the image. Nothing is changed."),
+            UiText.Get("Cancelling the inspection"), UiText.Get("Waiting for the current step to finish"), UiText.Get("The image was inspected."), false),
+        OperationKind.Inventory => new(UiText.Get("component list"), UiText.Get("Cancel listing components?"),
+            UiText.Get("Listing stops at the next safe point. The read-only mount of the image is discarded and the image is not changed."),
+            UiText.Get("Cancel listing"), UiText.Get("Continue"), UiText.Get("Stops listing components. The image is not changed."),
+            UiText.Get("Cancelling the component list"), UiText.Get("Waiting for the current operation to finish"), UiText.Get("The component list was loaded."), true),
+        OperationKind.Recover => new(UiText.Get("recovery"), UiText.Get("Cancel this recovery?"),
+            UiText.Get("Recovery stops at the next safe point. Run Recover workspace again to finish cleaning up this job."),
+            UiText.Get("Cancel recovery"), UiText.Get("Keep recovering"), UiText.Get("Stops the recovery at the next safe point."),
+            UiText.Get("Cancelling the recovery"), UiText.Get("Waiting for the current operation to finish"), UiText.Get("The workspace was recovered."), false),
+        OperationKind.Elevate => new(UiText.Get("restart"), UiText.Get("Cancel the restart?"),
+            UiText.Get("The app keeps running without administrator privileges."),
+            UiText.Get("Cancel restart"), UiText.Get("Continue"), UiText.Get("Stops restarting the app as administrator."),
+            UiText.Get("Cancelling the restart"), UiText.Get("Waiting for the current step to finish"), UiText.Get("The app was restarted."), false),
+        OperationKind.Check => new(UiText.Get("check"), UiText.Get("Cancel the check?"),
+            UiText.Get("The check stops. Nothing has been changed."),
+            UiText.Get("Cancel check"), UiText.Get("Continue"), UiText.Get("Stops checking your choices. Nothing is changed."),
+            UiText.Get("Cancelling the check"), UiText.Get("Waiting for the current step to finish"), UiText.Get("The check finished."), false),
+        _ => new(UiText.Get("operation"), UiText.Get("Cancel this operation?"),
+            UiText.Get("The operation stops after the current step. Nothing has been changed."),
+            UiText.Get("Cancel"), UiText.Get("Continue"), UiText.Get("Stops the running operation."),
+            UiText.Get("Cancelling"), UiText.Get("Waiting for the current step to finish"), UiText.Get("The operation finished."), false)
     };
 }
 
@@ -574,13 +575,13 @@ internal sealed class CancellationFlow
         if (progress.OperationId is null || phase != CancelPhase.Waiting) return;
         if (progress.State == BuildOperationState.Running)
         {
-            current = progress.Message;
+            current = UiText.Display(progress.Message);
             percent = null;
             percentFinished = false;
         }
         else if (progress.State is null && progress.Percent is { } value && double.IsFinite(value) && !percentFinished)
         {
-            if (current.Length == 0) current = progress.Message;
+            if (current.Length == 0) current = UiText.Display(progress.Message);
             percent = Math.Clamp(value, 0, 100);
             percentFinished = percent >= 100;
         }
@@ -633,20 +634,20 @@ internal sealed class CancellationFlow
 
     // A problem the cancel itself ran into (a callback that failed) is shown while the stop is still running.
     private CancelView Stopping() => new(CancelStage.Cancelling, CancelTone.Neutral, copy.Stopping, "", StatusText(), DetailText(),
-        copy.CleansUp ? "The image tool is never force-stopped, so this can take a few minutes. Do not close the app." :
-            "Do not close the app until this finishes.",
+        copy.CleansUp ? UiText.Get("The image tool is never force-stopped, so this can take a few minutes. Do not close the app.") :
+            UiText.Get("Do not close the app until this finishes."),
         run.Warning, true, true, 0, null, null, false, CancelLink.None, "");
 
     private string StatusText() => phase switch
     {
-        CancelPhase.DiscardingMount => "Discarding the working mount",
-        CancelPhase.SavingLogs => "Saving logs",
-        _ => percentFinished ? "Finishing the current operation" : copy.Waiting
+        CancelPhase.DiscardingMount => UiText.Get("Discarding the working mount"),
+        CancelPhase.SavingLogs => UiText.Get("Saving logs"),
+        _ => percentFinished ? UiText.Get("Finishing the current operation") : copy.Waiting
     };
 
     private string DetailText() =>
         phase != CancelPhase.Waiting || current.Length == 0 ? "" :
-        percent is { } value && !percentFinished ? $"Current operation: {current} · {Math.Floor(value):0}%" : $"Current operation: {current}";
+        percent is { } value && !percentFinished ? UiText.Format($"Current operation: {current} · {Math.Floor(value):0}%") : UiText.Format($"Current operation: {current}");
 
     private CancelView Ended(OperationEnd e)
     {
@@ -655,30 +656,30 @@ internal sealed class CancellationFlow
         string heading, body, status;
         if (e.RecoveryRequired)
         {
-            heading = title + (e.Result == RunResult.Cancelled ? ", but recovery is needed" : ", and recovery is needed");
+            heading = title + (e.Result == RunResult.Cancelled ? UiText.Get(", but recovery is needed") : UiText.Get(", and recovery is needed"));
             (body, status) = (e.Message, "");
         }
         else if (e.Result == RunResult.Succeeded)
         {
-            heading = endedBeforeConfirm ? $"The {copy.Noun} already finished" : "Finished before it could be cancelled";
-            body = copy.Finished + (endedBeforeConfirm ? " It finished before it could be cancelled, so nothing was cancelled." :
-                " The cancellation arrived too late to stop it, so nothing was cancelled.");
-            status = "Finished.";
+            heading = endedBeforeConfirm ? UiText.Format($"The {copy.Noun} already finished") : UiText.Get("Finished before it could be cancelled");
+            body = copy.Finished + (endedBeforeConfirm ? UiText.Get(" It finished before it could be cancelled, so nothing was cancelled.") :
+                UiText.Get(" The cancellation arrived too late to stop it, so nothing was cancelled."));
+            status = UiText.Get("Finished.");
         }
         else
         {
             heading = title;
             body = e.Message;
-            status = e.Result == RunResult.Cancelled ? copy.CleansUp ? "Cleanup finished." : "Stopped." : "";
+            status = e.Result == RunResult.Cancelled ? copy.CleansUp ? UiText.Get("Cleanup finished.") : UiText.Get("Stopped.") : "";
         }
         var link = tone != CancelTone.Done && e.WorkDirectory is not null ? CancelLink.OpenLogs :
             tone == CancelTone.Error && e.Details.Length > 0 ? CancelLink.CopyDetails : CancelLink.None;
         // A bar is only ever shown complete for a run that ended cleanly; failures and recovery never wear it.
         var complete = tone != CancelTone.Error;
         return new(CancelStage.Ended, tone, heading, body, complete ? status : "", "",
-            tone != CancelTone.Done && e.WorkDirectory is { } directory ? "Job folder and logs: " + directory : "",
+            tone != CancelTone.Done && e.WorkDirectory is { } directory ? UiText.Get("Job folder and logs: ") + directory : "",
             e.Warning, complete, false, complete ? 100 : 0, null,
-            tone == CancelTone.Error ? "Close" : "Done", true, link,
-            link == CancelLink.OpenLogs ? "Open logs" : link == CancelLink.CopyDetails ? "Copy details" : "");
+            tone == CancelTone.Error ? UiText.Get("Close") : UiText.Get("Done"), true, link,
+            link == CancelLink.OpenLogs ? UiText.Get("Open logs") : link == CancelLink.CopyDetails ? UiText.Get("Copy details") : "");
     }
 }

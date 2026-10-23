@@ -73,8 +73,8 @@ public sealed partial class MainWindow : Window
         {
             if (!busy) return;
             args.Cancel = true;
-            ShowNotice("An operation is still running.", cancelRequested ? "It is being cancelled. Wait for it to stop before closing." :
-                $"Choose {CancelPrompts.ButtonLabel} and wait for the image operation to finish before closing.", InfoBarSeverity.Warning);
+            ShowNotice(UiText.Get("An operation is still running."), cancelRequested ? UiText.Get("It is being cancelled. Wait for it to stop before closing.") :
+                UiText.Format($"Choose {CancelPrompts.ButtonLabel} and wait for the image operation to finish before closing."), InfoBarSeverity.Warning);
         };
         WorkspaceBox.Text = @"C:\tiny11";
         OutputBox.Text = Path.Combine(WorkspaceBox.Text, $"tiny11-{DateTime.Now:yyyyMMdd-HHmmss}.iso");
@@ -85,7 +85,7 @@ public sealed partial class MainWindow : Window
         Root.ActualThemeChanged += (_, _) => ApplyContrast();
         Activated += (_, _) => ApplyContrast();
         Closed += (_, _) => progressTimer.Stop();
-        LatestDownloadDescription.Text = $"Official Microsoft ISO · {HostArchitecture.ToUpperInvariant()} · {CultureInfo.CurrentUICulture.NativeName}";
+        LatestDownloadDescription.Text = UiText.Format($"Official Microsoft ISO · {HostArchitecture.ToUpperInvariant()} · {CultureInfo.CurrentUICulture.NativeName}");
         foreach (var choice in options) choice.PropertyChanged += (_, _) => UpdateCounts();
         initialized = true;
         ApplyContrast();
@@ -99,11 +99,11 @@ public sealed partial class MainWindow : Window
             try
             {
                 var recipe = JsonSerializer.Deserialize<BuildRecipe>(File.ReadAllText(args[restoreIndex + 1]), JsonDefaults.Options)
-                    ?? throw new InvalidDataException("The saved session is empty.");
+                    ?? throw new InvalidDataException(UiText.Get("The saved session is empty."));
                 RestoreRecipe(recipe);
-                ShowNotice("Session restored.", "Inspect the image again before continuing. No build starts automatically.");
+                ShowNotice(UiText.Get("Session restored."), UiText.Get("Inspect the image again before continuing. No build starts automatically."));
             }
-            catch (Exception error) { ShowNotice("Session could not be restored.", ErrorText.Reason(error), InfoBarSeverity.Error); }
+            catch (Exception error) { ShowNotice(UiText.Get("Session could not be restored."), ErrorText.Reason(error), InfoBarSeverity.Error); }
         }
         UpdateCounts();
     }
@@ -200,9 +200,9 @@ public sealed partial class MainWindow : Window
         NextButton.IsEnabled = !busy && canAdvance;
         // After a build stops, the primary action says what it will do: start over, or continue the resume.
         var retry = step == 5 && !completed && stoppedRun is not null;
-        ActionLabel.Text = completed ? "Build another" : retry ? (stoppedRun == OperationKind.Resume ? "Resume again" : "Build again") : step switch
+        ActionLabel.Text = completed ? UiText.Get("Build another") : retry ? (stoppedRun == OperationKind.Resume ? UiText.Get("Resume again") : UiText.Get("Build again")) : step switch
         {
-            0 => "Start", 1 => "Next", 2 => "Next", 3 => "Review", 4 => "Continue", _ => "Build"
+            0 => UiText.Get("Start"), 1 => UiText.Get("Next"), 2 => UiText.Get("Next"), 3 => UiText.Get("Review"), 4 => UiText.Get("Continue"), _ => UiText.Get("Build")
         };
         ActionLabel.FontSize = 32;
         Grid.SetColumn(NextButton, 2);
@@ -250,7 +250,7 @@ public sealed partial class MainWindow : Window
         if (busy || modalOpen) return;
         if (sender is not Button { Tag: string tag } || !Enum.TryParse<BuildMode>(tag, out var mode) || !Enum.IsDefined(mode))
         {
-            ShowNotice("Build mode could not be selected.", "The selected card does not identify a valid build mode.", InfoBarSeverity.Error);
+            ShowNotice(UiText.Get("Build mode could not be selected."), UiText.Get("The selected card does not identify a valid build mode."), InfoBarSeverity.Error);
             return;
         }
         ModeChoice.SelectedIndex = (int)mode;
@@ -283,17 +283,17 @@ public sealed partial class MainWindow : Window
         }
         if (step == 2 && UsesCore && !coreAcknowledged)
         {
-            coreAcknowledged = await Confirm("Core is not serviceable",
-                "No Windows Update\nNo Microsoft Defender\nNo recovery environment\nNo added languages or features\n\n" +
-                "Use only in an isolated test VM.\nThe image may not boot.",
-                "I agree");
-            CoreConsentStatus.Text = coreAcknowledged ? "Core limitations accepted for this build." : "Core limitations have not been accepted.";
+            coreAcknowledged = await Confirm(UiText.Get("Core is not serviceable"),
+                UiText.Get("No Windows Update\nNo Microsoft Defender\nNo recovery environment\nNo added languages or features\n\n") +
+                UiText.Get("Use only in an isolated test VM.\nThe image may not boot."),
+                UiText.Get("I agree"));
+            CoreConsentStatus.Text = coreAcknowledged ? UiText.Get("Core limitations accepted for this build.") : UiText.Get("Core limitations have not been accepted.");
             if (!coreAcknowledged) return;
         }
         await RunOperation(OperationKind.Check, async token =>
         {
-            Working("Checking your choices…");
-            if (step >= 1 && image is null) throw new InvalidOperationException("Inspect the selected Windows image first.");
+            Working(UiText.Get("Checking your choices…"));
+            if (step >= 1 && image is null) throw new InvalidOperationException(UiText.Get("Inspect the selected Windows image first."));
             image?.Validate();
             if (step >= 2) CreateRecipe().ValidateOptions();
             if (step >= 3)
@@ -359,8 +359,8 @@ public sealed partial class MainWindow : Window
                 try { ShowStopped(kind, outcome); }
                 catch (Exception display)
                 {
-                    try { ShowNotice("The operation did not complete.", ErrorText.Reason(error) + " " + display.Message, InfoBarSeverity.Error); }
-                    catch (Exception) { ReportUiFailure("The outcome could not be shown.", display); }
+                    try { ShowNotice(UiText.Get("The operation did not complete."), ErrorText.Reason(error) + " " + display.Message, InfoBarSeverity.Error); }
+                    catch (Exception) { ReportUiFailure(UiText.Get("The outcome could not be shown."), display); }
                 }
             }
         }
@@ -373,7 +373,7 @@ public sealed partial class MainWindow : Window
                 FlushBuildProgress(flushAll: true);
                 DrainDownload();
             }
-            catch (Exception error) { ReportUiFailure("The last progress could not be shown.", error); }
+            catch (Exception error) { ReportUiFailure(UiText.Get("The last progress could not be shown."), error); }
             finally
             {
                 progressTimer.Stop();
@@ -387,7 +387,7 @@ public sealed partial class MainWindow : Window
                     // A cancel prompt that is still open keeps focus until it closes; it restores focus itself.
                     if (!modalOpen) RestoreFocus(previousFocus);
                 }
-                catch (Exception error) { ReportUiFailure("The page could not be reset after the operation.", error); }
+                catch (Exception error) { ReportUiFailure(UiText.Get("The page could not be reset after the operation."), error); }
                 finally { operation.Settle(); }
             }
         }
@@ -404,7 +404,7 @@ public sealed partial class MainWindow : Window
             var text = what + " " + ErrorText.Reason(error);
             liveLog.Add("[App] " + text);
             if (Notice.IsOpen) Notice.Message = ErrorText.Summary(Notice.Message + " " + text, 400);
-            else ShowNotice("Part of the page could not be updated.", text, InfoBarSeverity.Warning, NoticeAction.CopyDetails, error.ToString());
+            else ShowNotice(UiText.Get("Part of the page could not be updated."), text, InfoBarSeverity.Warning, NoticeAction.CopyDetails, error.ToString());
         }
         catch (Exception) { /* even the notice cannot be drawn; the debugger output above is all that is left */ }
     }
@@ -439,8 +439,8 @@ public sealed partial class MainWindow : Window
             // First, so that whatever below fails to draw, the page is not left spinning.
             StopBuildActivity();
             board.Stop(outcome.Cancelled);
-            var noun = kind == OperationKind.Resume ? "Resume" : "Build";
-            BuildHeading.Text = outcome.Cancelled ? $"{noun} cancelled" : $"{noun} stopped";
+            var noun = kind == OperationKind.Resume ? UiText.Get("Resume") : UiText.Get("Build");
+            BuildHeading.Text = outcome.Cancelled ? UiText.Format($"{noun} cancelled") : UiText.Format($"{noun} stopped");
             CurrentMessage.Text = outcome.FullMessage;
             HistoryCount.Text = StageSummary.Describe(board);
         }
@@ -464,8 +464,8 @@ public sealed partial class MainWindow : Window
         noticeAction = action;
         noticeDetails = details ?? "";
         NoticeButton.Visibility = action == NoticeAction.None ? Visibility.Collapsed : Visibility.Visible;
-        NoticeButton.Content = action == NoticeAction.OpenLogs ? "Open logs" : "Copy details";
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(NoticeButton, action == NoticeAction.OpenLogs ? "Open logs folder" : "Copy error details");
+        NoticeButton.Content = action == NoticeAction.OpenLogs ? UiText.Get("Open logs") : UiText.Get("Copy details");
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(NoticeButton, action == NoticeAction.OpenLogs ? UiText.Get("Open logs folder") : UiText.Get("Copy error details"));
         Notice.IsOpen = true;
     }
 
@@ -473,7 +473,7 @@ public sealed partial class MainWindow : Window
     {
         if (noticeAction == NoticeAction.OpenLogs) { OnOpenLogs(sender, args); return; }
         if (noticeAction != NoticeAction.CopyDetails || noticeDetails.Length == 0) return;
-        NoticeButton.Content = CopyToClipboard(noticeDetails) ? "Copied" : "Could not copy";
+        NoticeButton.Content = CopyToClipboard(noticeDetails) ? UiText.Get("Copied") : UiText.Get("Could not copy");
     }
 
     // A clipboard that is locked or unavailable is reported to the caller, never thrown into the page or a dialog.
@@ -538,7 +538,7 @@ public sealed partial class MainWindow : Window
             var dialog = new ContentDialog
             {
                 XamlRoot = Root.XamlRoot, RequestedTheme = DialogTheme(),
-                Title = title, Content = content, PrimaryButtonText = action, CloseButtonText = "Cancel",
+                Title = title, Content = content, PrimaryButtonText = action, CloseButtonText = UiText.Get("Cancel"),
                 DefaultButton = ContentDialogButton.Close
             };
             return await dialog.ShowAsync() == ContentDialogResult.Primary;
@@ -573,7 +573,7 @@ public sealed partial class MainWindow : Window
     private Task<string?> SaveFile(string filename, string extension)
     {
         var picker = new FileSavePicker(AppWindow.Id) { SuggestedFileName = filename };
-        picker.FileTypeChoices.Add(extension == ".iso" ? "ISO image" : "Image recipe", new List<string> { extension });
+        picker.FileTypeChoices.Add(extension == ".iso" ? UiText.Get("ISO image") : UiText.Get("Image recipe"), new List<string> { extension });
         return Pick(async () => (await picker.PickSaveFileAsync())?.Path);
     }
 
@@ -593,7 +593,7 @@ public sealed partial class MainWindow : Window
         pendingImageIndex = null;
         pendingSourcePath = "";
         EditionChoice.ItemsSource = null;
-        ImageBadge.Text = "No image selected";
+        ImageBadge.Text = UiText.Get("No image selected");
         ClearInventory();
         UpdateNavigation();
     }
@@ -606,9 +606,9 @@ public sealed partial class MainWindow : Window
               SourcePathBox.Text.Trim().Equals(pendingSourcePath, StringComparison.OrdinalIgnoreCase)))
             ClearInventory();
         image = selected;
-        ImageBadge.Text = image is null ? "No image selected" : $"{image.Name}\n{image.Architecture} · build {image.Version.Build}";
+        ImageBadge.Text = image is null ? UiText.Get("No image selected") : UiText.Format($"{image.Name}\n{image.Architecture} · build {image.Version.Build}");
         if (image is not null && !image.IsSupported)
-            ShowNotice("This edition is not supported.", "Choose a Windows 11 client image, 22H2 or newer, in x64 or ARM64 format.", InfoBarSeverity.Warning);
+            ShowNotice(UiText.Get("This edition is not supported."), UiText.Get("Choose a Windows 11 client image, 22H2 or newer, in x64 or ARM64 format."), InfoBarSeverity.Warning);
         UpdateNavigation();
     }
 
@@ -616,7 +616,7 @@ public sealed partial class MainWindow : Window
     {
         if (!ToolLocator.IsAdministrator)
         {
-            ShowNotice("Administrator privileges required.", "Close and reopen Tiny11Builder.exe, then approve the Windows administrator prompt.", InfoBarSeverity.Warning);
+            ShowNotice(UiText.Get("Administrator privileges required."), UiText.Get("Close and reopen Tiny11Builder.exe, then approve the Windows administrator prompt."), InfoBarSeverity.Warning);
             return;
         }
         await RunOperation(OperationKind.Inspect, InspectSourceAsync);
@@ -626,10 +626,10 @@ public sealed partial class MainWindow : Window
     {
         if (!ToolLocator.IsAdministrator)
         {
-            ShowNotice("Image selected.", "Close and reopen Tiny11Builder.exe with administrator approval to inspect its editions.");
+            ShowNotice(UiText.Get("Image selected."), UiText.Get("Close and reopen Tiny11Builder.exe with administrator approval to inspect its editions."));
             return;
         }
-        Working("Inspecting the image…");
+        Working(UiText.Get("Inspecting the image…"));
         var source = SourcePathBox.Text.Trim();
         servicingTool = ToolLocator.FindDism();
         await Task.Run(() => ToolLocator.Validate(servicingTool, "dism.exe"), token);
@@ -637,7 +637,7 @@ public sealed partial class MainWindow : Window
         var restored = source.Equals(pendingSourcePath, StringComparison.OrdinalIgnoreCase) ? pendingImageIndex : null;
         EditionChoice.ItemsSource = images;
         EditionChoice.SelectedIndex = ImageDefaults.SelectPosition(images, restored);
-        ShowNotice("Image inspected.", $"{images.Count} editions found. {image?.Name} is selected.");
+        ShowNotice(UiText.Get("Image inspected."), UiText.Format($"{images.Count} editions found. {image?.Name} is selected."));
     }
 
     private void BeginDownloadText(Func<DownloadProgress, string> format)
@@ -674,7 +674,7 @@ public sealed partial class MainWindow : Window
         var hash = OfficialImageDownloader.ValidateHash(PublishedHashBox.Text);
         var path = await SaveFile(Path.GetFileName(uri.AbsolutePath), ".iso");
         if (path is null) return;
-        Working("Downloading from Microsoft…");
+        Working(UiText.Get("Downloading from Microsoft…"));
         using var client = OfficialImageDownloader.CreateClient();
         DownloadBar.IsIndeterminate = true;
         BeginDownloadText(p => FormatDownload(p, ""));
@@ -684,20 +684,20 @@ public sealed partial class MainWindow : Window
             DrainDownload();
             SourcePathBox.Text = downloaded.Path;
             DownloadStatus.Text = $"SHA-256: {downloaded.Sha256}";
-            ShowNotice(downloaded.VerifiedAgainstPublishedHash ? "Official ISO downloaded and hash-verified." : "Microsoft-hosted ISO downloaded.",
-                downloaded.VerifiedAgainstPublishedHash ? "The file matches the supplied published SHA-256. Inspect it to select an edition." :
-                "No published hash was supplied. The computed hash is shown, but authenticity has not been independently verified.", InfoBarSeverity.Informational);
+            ShowNotice(downloaded.VerifiedAgainstPublishedHash ? UiText.Get("Official ISO downloaded and hash-verified.") : UiText.Get("Microsoft-hosted ISO downloaded."),
+                downloaded.VerifiedAgainstPublishedHash ? UiText.Get("The file matches the supplied published SHA-256. Inspect it to select an edition.") :
+                UiText.Get("No published hash was supplied. The computed hash is shown, but authenticity has not been independently verified."), InfoBarSeverity.Informational);
         }
         finally { EndDownloadText(); }
     });
 
     private async void OnDownloadLatest(object sender, RoutedEventArgs args) => await RunOperation(OperationKind.Download, async token =>
     {
-        Working("Finding the latest Windows 11…");
+        Working(UiText.Get("Finding the latest Windows 11…"));
         DownloadBar.IsIndeterminate = true;
         try
         {
-            var catalogProgress = new UiProgress<string>(text => DispatcherQueue.TryEnqueue(() => DownloadStatus.Text = text));
+            var catalogProgress = new UiProgress<string>(text => DispatcherQueue.TryEnqueue(() => DownloadStatus.Text = UiText.Display(text)));
             using var catalogClient = LatestWindowsMedia.CreateClient();
             var media = await new LatestWindowsMedia(catalogClient).ResolveAsync(HostArchitecture,
                 CultureInfo.CurrentUICulture, catalogProgress, token);
@@ -709,27 +709,27 @@ public sealed partial class MainWindow : Window
             var hashFile = path + ".sha256";
             if (File.Exists(path) && File.Exists(hashFile))
             {
-                Working("Checking the downloaded ISO…");
+                Working(UiText.Get("Checking the downloaded ISO…"));
                 await using var input = File.OpenRead(path);
                 await IsoStructure.ValidateAsync(input, token);
                 var actual = Convert.ToHexString(await SHA256.HashDataAsync(input, token));
                 if (actual != (await File.ReadAllTextAsync(hashFile, token)).Trim() ||
                     (media.Sha256 is not null && actual != media.Sha256))
-                    throw new InvalidDataException("The cached ISO has changed. It has not been accepted.");
-                DownloadStatus.Text = "Previously downloaded ISO verified.";
+                    throw new InvalidDataException(UiText.Get("The cached ISO has changed. It has not been accepted."));
+                DownloadStatus.Text = UiText.Get("Previously downloaded ISO verified.");
             }
             else
             {
                 if (File.Exists(path)) path = Path.Combine(folder, Path.GetFileNameWithoutExtension(media.FileName) + "-" + Guid.NewGuid().ToString("N")[..8] + ".iso");
-                Working("Downloading from Microsoft…");
+                Working(UiText.Get("Downloading from Microsoft…"));
                 using var downloadClient = OfficialImageDownloader.CreateClient();
                 BeginDownloadText(p => FormatDownload(p, $"{media.Language} · "));
                 var download = await new OfficialImageDownloader(downloadClient).DownloadAsync(media.Url.AbsoluteUri,
                     path, media.Sha256, downloadUpdates, token);
                 DrainDownload();
                 await File.WriteAllTextAsync(path + ".sha256", download.Sha256, token);
-                DownloadStatus.Text = $"Downloaded {media.Description}. SHA-256: {download.Sha256}" +
-                    (download.VerifiedAgainstPublishedHash ? " (published hash verified)" : " (computed hash; Microsoft supplied no published hash)");
+                DownloadStatus.Text = UiText.Format($"Downloaded {media.Description}. SHA-256: {download.Sha256}") +
+                    (download.VerifiedAgainstPublishedHash ? UiText.Get(" (published hash verified)") : UiText.Get(" (computed hash; Microsoft supplied no published hash)"));
             }
             SourcePathBox.Text = path;
             await InspectSourceAsync(token);
@@ -742,8 +742,8 @@ public sealed partial class MainWindow : Window
         servicingTool = ToolLocator.FindDism();
         using var client = OfficialImageDownloader.CreateClient();
         isoTool = await new OscdimgAcquirer(client).EnsureAsync(Path.Combine(dataDirectory, "tools"),
-            new UiProgress<string>(text => DispatcherQueue.TryEnqueue(() => ToolStatus.Text = text)), token);
-        ToolStatus.Text = "Image and ISO tools ready.";
+            new UiProgress<string>(text => DispatcherQueue.TryEnqueue(() => ToolStatus.Text = UiText.Display(text))), token);
+        ToolStatus.Text = UiText.Get("Image and ISO tools ready.");
     }
 
     private void OnModeChanged(object sender, SelectionChangedEventArgs args)
@@ -770,14 +770,14 @@ public sealed partial class MainWindow : Window
         CustomChoices.Visibility = SelectedMode == BuildMode.Custom ? Visibility.Visible : Visibility.Collapsed;
         CoreWarning.IsOpen = UsesCore;
         CoreConsentStatus.Visibility = UsesCore ? Visibility.Visible : Visibility.Collapsed;
-        CoreConsentStatus.Text = coreAcknowledged ? "Core limitations accepted for this build." : "You will be asked to accept Core's limitations before continuing.";
+        CoreConsentStatus.Text = coreAcknowledged ? UiText.Get("Core limitations accepted for this build.") : UiText.Get("You will be asked to accept Core's limitations before continuing.");
         ModeDescription.Text = SelectedMode switch
         {
-            BuildMode.Tiny11 => "Original Tiny11 removals, including Edge/WebView2 and OneDrive binaries. Windows Update, Defender and recovery are kept. Choose Custom to change individual removals.",
-            BuildMode.Tiny11Core => "Tiny11 Core removals, including irreversible component pruning. Choose Custom to change individual removals.",
-            _ => "Start with nothing selected, then choose what to remove or disable. You can also list individual components, including protected items."
+            BuildMode.Tiny11 => UiText.Get("Original Tiny11 removals, including Edge/WebView2 and OneDrive binaries. Windows Update, Defender and recovery are kept. Choose Custom to change individual removals."),
+            BuildMode.Tiny11Core => UiText.Get("Tiny11 Core removals, including irreversible component pruning. Choose Custom to change individual removals."),
+            _ => UiText.Get("Start with nothing selected, then choose what to remove or disable. You can also list individual components, including protected items.")
         };
-        SourceMode.Text = $"Build mode: {(ModeChoice.SelectedItem as ComboBoxItem)?.Content}";
+        SourceMode.Text = UiText.Format($"Build mode: {(ModeChoice.SelectedItem as ComboBoxItem)?.Content}");
         MarkChoice(Tiny11Selection, SelectedMode == BuildMode.Tiny11);
         MarkChoice(CoreSelection, SelectedMode == BuildMode.Tiny11Core);
         MarkChoice(CustomSelection, SelectedMode == BuildMode.Custom);
@@ -787,7 +787,7 @@ public sealed partial class MainWindow : Window
     private static void MarkChoice(Button card, bool selected)
     {
         card.Style = (Style)Application.Current.Resources[selected ? "ModeCardSelected" : "ModeCard"];
-        Microsoft.UI.Xaml.Automation.AutomationProperties.SetItemStatus(card, selected ? "Selected" : "Not selected");
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetItemStatus(card, selected ? UiText.Get("Selected") : UiText.Get("Not selected"));
     }
     private void OnChoicesChanged(object sender, RoutedEventArgs args)
     {
@@ -804,28 +804,28 @@ public sealed partial class MainWindow : Window
     private void OnOptionFilterChanged(object sender, SelectionChangedEventArgs args) { if (initialized) FilterOptions(); }
     private void FilterOptions()
     {
-        var category = (OptionFilter.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "All";
-        OptionsList.ItemsSource = options.Where(o => category == "All" || o.Category == category).ToArray();
+        var category = (OptionFilter.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? UiText.Get("All");
+        OptionsList.ItemsSource = options.Where(o => category == UiText.Get("All") || o.Category == category).ToArray();
     }
     private void UpdateCounts()
     {
         if (!initialized) return;
         var custom = inventory.Count > 0 ? inventory.Count(i => i.Selected) : pendingActions.Length;
-        SelectionCount.Text = $"{options.Count(o => o.Selected)} removal groups selected · {custom} advanced actions";
-        ExpertCount.Text = $"{inventory.Count:N0} components listed · {custom:N0} advanced actions selected.";
+        SelectionCount.Text = UiText.Format($"{options.Count(o => o.Selected)} removal groups selected · {custom} advanced actions");
+        ExpertCount.Text = UiText.Format($"{inventory.Count:N0} components listed · {custom:N0} advanced actions selected.");
         UpdateNavigation();
     }
 
     private async void OnOpenExpert(object sender, RoutedEventArgs args)
     {
         if (busy || modalOpen || SelectedMode != BuildMode.Custom) return;
-        if (image is null) { ShowNotice("Inspect an image first.", "Select an edition before listing its components.", InfoBarSeverity.Warning); return; }
-        if (!await Confirm("Protected components are included",
-            "This inventory includes boot drivers, security, licensing, system apps and component payloads. Removing them can make Windows unbootable, insecure or impossible to update. Protected packages may refuse removal. Direct payload removal is unsupported.\n\nContinue only for isolated testing, with backups and a known-good installer.",
-            "Inspect components")) return;
+        if (image is null) { ShowNotice(UiText.Get("Inspect an image first."), UiText.Get("Select an edition before listing its components."), InfoBarSeverity.Warning); return; }
+        if (!await Confirm(UiText.Get("Protected components are included"),
+            UiText.Get("This inventory includes boot drivers, security, licensing, system apps and component payloads. Removing them can make Windows unbootable, insecure or impossible to update. Protected packages may refuse removal. Direct payload removal is unsupported.\n\nContinue only for isolated testing, with backups and a known-good installer."),
+            UiText.Get("Inspect components"))) return;
         await RunOperation(OperationKind.Inventory, async token =>
         {
-            Working("Listing image components…");
+            Working(UiText.Get("Listing image components…"));
             var recipe = CreateRecipe() with { CoreAcknowledged = true, ExpertAcknowledged = true };
             var items = await Task.Run(() => engine.InventoryAsync(recipe, BuildProgressReporter(), token), token);
             var previous = inventory.Count > 0 ? inventory.Where(i => i.Selected).Select(i => i.Action).ToArray() : pendingActions;
@@ -842,7 +842,7 @@ public sealed partial class MainWindow : Window
             ExpertConsent.IsChecked = true;
             FilterInventory();
             UpdateCounts();
-            ShowNotice("Component list loaded.", "Existing selections were preserved. Check the individual items you want to remove or disable.");
+            ShowNotice(UiText.Get("Component list loaded."), UiText.Get("Existing selections were preserved. Check the individual items you want to remove or disable."));
         });
     }
 
@@ -859,7 +859,7 @@ public sealed partial class MainWindow : Window
     private void OnInventoryFilterSelection(object sender, SelectionChangedEventArgs args) { if (initialized) FilterInventory(); }
     private void FilterInventory()
     {
-        var filter = (InventoryFilter.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "All";
+        var filter = (InventoryFilter.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "All";
         var query = InventorySearch.Text.Trim();
         InventoryList.ItemsSource = inventory.Where(i => (filter == "All" || i.Item.Kind.ToString() == filter) &&
             (query.Length == 0 || i.Title.Contains(query, StringComparison.OrdinalIgnoreCase) ||
@@ -876,31 +876,31 @@ public sealed partial class MainWindow : Window
     {
         var recipe = CreateRecipe();
         var text = new StringBuilder();
-        text.AppendLine($"IMAGE       {image?.Summary ?? "Not inspected"}");
-        text.AppendLine($"MODE        {(ModeChoice.SelectedItem as ComboBoxItem)?.Content}");
-        if (SelectedMode == BuildMode.Custom) text.AppendLine($"CORE REMOVALS {UsesCore}");
-        text.AppendLine($"SOURCE      {recipe.SourcePath}");
-        text.AppendLine($"OUTPUT      {recipe.OutputPath}");
-        text.AppendLine($"WORKSPACE   {recipe.WorkspacePath}");
-        text.AppendLine($"IMAGE TOOL  {recipe.DismPath}");
-        text.AppendLine($"ISO TOOL    {recipe.OscdimgPath}");
-        text.AppendLine($"COMPRESSION {recipe.Compression}");
-        text.AppendLine($"TURBO       {recipe.TurboMode}");
-        text.AppendLine($"CACHE CLEAN {recipe.RemoveRedundantData}");
-        text.AppendLine($"OMIT SXS    {recipe.OmitNetFx3SetupPayload}");
-        text.AppendLine($"COMPACT     {recipe.CompactInstallation}");
+        text.AppendLine(UiText.Format($"IMAGE       {image?.Summary ?? UiText.Get("Not inspected")}"));
+        text.AppendLine(UiText.Format($"MODE        {(ModeChoice.SelectedItem as ComboBoxItem)?.Content}"));
+        if (SelectedMode == BuildMode.Custom) text.AppendLine(UiText.Format($"CORE REMOVALS {UsesCore}"));
+        text.AppendLine(UiText.Format($"SOURCE      {recipe.SourcePath}"));
+        text.AppendLine(UiText.Format($"OUTPUT      {recipe.OutputPath}"));
+        text.AppendLine(UiText.Format($"WORKSPACE   {recipe.WorkspacePath}"));
+        text.AppendLine(UiText.Format($"IMAGE TOOL  {recipe.DismPath}"));
+        text.AppendLine(UiText.Format($"ISO TOOL    {recipe.OscdimgPath}"));
+        text.AppendLine(UiText.Format($"COMPRESSION {recipe.Compression}"));
+        text.AppendLine(UiText.Format($"TURBO       {recipe.TurboMode}"));
+        text.AppendLine(UiText.Format($"CACHE CLEAN {recipe.RemoveRedundantData}"));
+        text.AppendLine(UiText.Format($"OMIT SXS    {recipe.OmitNetFx3SetupPayload}"));
+        text.AppendLine(UiText.Format($"COMPACT     {recipe.CompactInstallation}"));
         text.AppendLine($".NET 3.5    {recipe.EnableNetFx3}");
-        text.AppendLine($"LOCAL OOBE  {recipe.PreferLocalAccount} (best effort)");
-        if (SetupLabels.LegacyReason(recipe) is { } legacyReason) text.AppendLine($"LEGACY SETUP automatic, needed for {legacyReason}");
-        text.AppendLine("\nREMOVE / DISABLE");
+        text.AppendLine(UiText.Format($"LOCAL OOBE  {recipe.PreferLocalAccount} (best effort)"));
+        if (SetupLabels.LegacyReason(recipe) is { } legacyReason) text.AppendLine(UiText.Format($"LEGACY SETUP automatic, needed for {legacyReason}"));
+        text.AppendLine(UiText.Get("\nREMOVE / DISABLE"));
         foreach (var option in options.Where(o => o.Selected)) text.AppendLine($"  {option.Title}");
-        foreach (var action in recipe.ExpertActions) text.AppendLine($"  EXPERT {action.Mode} {action.Kind}: {action.Identity}");
-        text.AppendLine("\nUNSELECTED ITEMS ARE KEPT.");
+        foreach (var action in recipe.ExpertActions) text.AppendLine(UiText.Format($"  EXPERT {action.Mode} {action.Kind}: {action.Identity}"));
+        text.AppendLine(UiText.Get("\nUNSELECTED ITEMS ARE KEPT."));
         if (recipe.Flavor == BuildFlavor.Core)
-            text.AppendLine("\nCORE: irreversible component pruning, WinRE removed, Update and Defender disabled. Install optional features now, not after creation.");
+            text.AppendLine(UiText.Get("\nCORE: irreversible component pruning, WinRE removed, Update and Defender disabled. Install optional features now, not after creation."));
         if (recipe.ExpertActions.Length > 0)
-            text.AppendLine("\nEXPERT: dependencies are not resolved. Protected and boot-critical removals may produce an unbootable image.");
-        text.AppendLine("\nPolicies may be ignored by a particular Windows build/edition or changed by updates. VM boot validation is required.");
+            text.AppendLine(UiText.Get("\nEXPERT: dependencies are not resolved. Protected and boot-critical removals may produce an unbootable image."));
+        text.AppendLine(UiText.Get("\nPolicies may be ignored by a particular Windows build/edition or changed by updates. VM boot validation is required."));
         return text.ToString();
     }
 
@@ -908,44 +908,44 @@ public sealed partial class MainWindow : Window
     {
         var recipe = CreateRecipe();
         ReviewText.Text = CreateReview();
-        ReviewImage.Text = image?.Summary ?? "No image selected";
+        ReviewImage.Text = image?.Summary ?? UiText.Get("No image selected");
         ReviewMode.Text = (ModeChoice.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "";
-        ReviewRemovals.Text = $"{recipe.SelectedOptions.Length} removal groups · {recipe.ExpertActions.Length} individual actions\n" +
-            (UsesCore ? "No servicing, recovery or Defender." : SelectedMode == BuildMode.Custom ?
-                "Custom removals may affect servicing, recovery or security." : "Windows Update, recovery and Defender retained.");
-        ReviewPaths.Text = $"ISO\n{recipe.OutputPath}\n\nWorkspace\n{recipe.WorkspacePath}";
-        var compression = recipe.Compression switch { Compression.Recovery => "Recovery ESD", Compression.Maximum => "Maximum WIM", _ => "Fast WIM" };
-        ReviewOptions.Text = $"{compression} compression\nTurbo mode: {(recipe.TurboMode ? "On" : "Off")}\n" +
-            $"Redundant data: {(recipe.RemoveRedundantData ? "Remove" : "Keep")}\n.NET setup payload: {(recipe.OmitNetFx3SetupPayload ? "Omit" : "Keep")}\n" +
-            $"Compact installation: {(recipe.CompactInstallation ? "On" : "Off")}\n.NET 3.5: {(recipe.EnableNetFx3 ? "Included" : "Not included")}\n" +
-            $"Local-account setup: {(recipe.PreferLocalAccount ? "Preferred" : "Default")}\nWorking files: {(recipe.KeepWorkingFiles ? "Keep" : "Clean after build")}" +
+        ReviewRemovals.Text = UiText.Format($"{recipe.SelectedOptions.Length} removal groups · {recipe.ExpertActions.Length} individual actions\n") +
+            (UsesCore ? UiText.Get("No servicing, recovery or Defender.") : SelectedMode == BuildMode.Custom ?
+                UiText.Get("Custom removals may affect servicing, recovery or security.") : UiText.Get("Windows Update, recovery and Defender retained."));
+        ReviewPaths.Text = UiText.Format($"ISO\n{recipe.OutputPath}\n\nWorkspace\n{recipe.WorkspacePath}");
+        var compression = recipe.Compression switch { Compression.Recovery => UiText.Get("Recovery ESD"), Compression.Maximum => UiText.Get("Maximum WIM"), _ => UiText.Get("Fast WIM") };
+        ReviewOptions.Text = UiText.Format($"{compression} compression\nTurbo mode: {(recipe.TurboMode ? UiText.Get("On") : UiText.Get("Off"))}\n") +
+            UiText.Format($"Redundant data: {(recipe.RemoveRedundantData ? UiText.Get("Remove") : UiText.Get("Keep"))}\n.NET setup payload: {(recipe.OmitNetFx3SetupPayload ? UiText.Get("Omit") : UiText.Get("Keep"))}\n") +
+            UiText.Format($"Compact installation: {(recipe.CompactInstallation ? UiText.Get("On") : UiText.Get("Off"))}\n.NET 3.5: {(recipe.EnableNetFx3 ? UiText.Get("Included") : UiText.Get("Not included"))}\n") +
+            UiText.Format($"Local-account setup: {(recipe.PreferLocalAccount ? UiText.Get("Preferred") : UiText.Get("Default"))}\nWorking files: {(recipe.KeepWorkingFiles ? UiText.Get("Keep") : UiText.Get("Clean after build"))}") +
             (SetupLabels.Legacy(recipe) is { } legacy ? "\n" + legacy : "");
     }
 
-    private const string BuildDescriptionText = "The selected edition will be copied, modified, compressed and saved as a bootable ISO.";
+    private static string BuildDescriptionText => UiText.Get("The selected edition will be copied, modified, compressed and saved as a bootable ISO.");
 
     // The legacy installer is derived from the removals, never chosen, so this only reports it.
     private void UpdateBuildDescription(BuildRecipe recipe) => BuildDescription.Text = BuildDescriptionText +
-        (SetupLabels.LegacyReason(recipe) is { } reason ? $" The legacy installer is turned on automatically for {reason}." : "");
+        (SetupLabels.LegacyReason(recipe) is { } reason ? UiText.Format($" The legacy installer is turned on automatically for {reason}.") : "");
 
     private async Task StartBuildAsync()
     {
         BuildRecipe recipe;
         try { recipe = CreateRecipe(); recipe.ValidateOptions(); PathSafety.Validate(recipe); }
-        catch (Exception error) { ShowNotice("The recipe is not ready.", ErrorText.Reason(error), InfoBarSeverity.Error); return; }
-        if (!await Confirm("Create this offline Windows image?",
-            $"Output: {recipe.OutputPath}\n\nMode: {(ModeChoice.SelectedItem as ComboBoxItem)?.Content}\nRemoval groups: {recipe.SelectedOptions.Length}\nIndividual actions: {recipe.ExpertActions.Length}" +
+        catch (Exception error) { ShowNotice(UiText.Get("The recipe is not ready."), ErrorText.Reason(error), InfoBarSeverity.Error); return; }
+        if (!await Confirm(UiText.Get("Create this offline Windows image?"),
+            UiText.Format($"Output: {recipe.OutputPath}\n\nMode: {(ModeChoice.SelectedItem as ComboBoxItem)?.Content}\nRemoval groups: {recipe.SelectedOptions.Length}\nIndividual actions: {recipe.ExpertActions.Length}") +
             (SetupLabels.Legacy(recipe) is { } legacy ? "\n" + legacy : ""),
-            "Build")) return;
+            UiText.Get("Build"))) return;
         await RunOperation(OperationKind.Build, async token =>
         {
             ResetBuildPage();
             BuildActivity.IsActive = true;
             BuildBar.IsIndeterminate = true;
-            CurrentMessage.Text = "Preparing image tools…";
+            CurrentMessage.Text = UiText.Get("Preparing image tools…");
             await EnsureToolsAsync(token);
             recipe = CreateRecipe();
-            BeginBuildRun("Building");
+            BeginBuildRun(UiText.Get("Building"));
             var reporter = BuildProgressReporter();
             var built = await Task.Run(() => engine.BuildAsync(recipe, reporter, token), token);
             ShowBuildResult(built, resumed: false, turbo: recipe.TurboMode);
@@ -967,9 +967,9 @@ public sealed partial class MainWindow : Window
         ResultWarnings.IsOpen = false;
         liveLog.Clear();
         RefreshLog(force: true);
-        BuildHeading.Text = "Build";
-        CurrentStage.Text = "Waiting to start";
-        CurrentMessage.Text = "No changes have been made.";
+        BuildHeading.Text = UiText.Get("Build");
+        CurrentStage.Text = UiText.Get("Waiting to start");
+        CurrentMessage.Text = UiText.Get("No changes have been made.");
         BuildGlyph.Glyph = "\uE7C5";
         BuildActivity.IsActive = false;
         BuildBar.IsIndeterminate = false;
@@ -998,38 +998,38 @@ public sealed partial class MainWindow : Window
         var size = File.Exists(built.IsoPath) ? $" · {new FileInfo(built.IsoPath).Length / (1024d * 1024 * 1024):N2} GiB ISO" : "";
         var metrics = new List<string>
         {
-            $"{(resumed ? "Resumed build" : turbo ? "Turbo build" : "Standard build")} · {built.Duration.TotalMinutes:N1} minutes{(resumed ? " in total" : "")}{size}"
+            UiText.Format($"{(resumed ? UiText.Get("Resumed build") : turbo ? UiText.Get("Turbo build") : UiText.Get("Standard build"))} · {built.Duration.TotalMinutes:N1} minutes{(resumed ? UiText.Get(" in total") : "")}{size}")
         };
         if (!resumed || built.RemovedLogicalBytes > 0 || built.OmittedSetupBytes > 0)
-            metrics.Add($"Redundant data removed: {built.RemovedLogicalBytes / (1024d * 1024):N1} MiB logical · " +
-                $"Setup payload omitted: {built.OmittedSetupBytes / (1024d * 1024):N1} MiB");
-        metrics.Add("Detailed stage timings are saved with the build report.");
+            metrics.Add(UiText.Format($"Redundant data removed: {built.RemovedLogicalBytes / (1024d * 1024):N1} MiB logical · ") +
+                UiText.Format($"Setup payload omitted: {built.OmittedSetupBytes / (1024d * 1024):N1} MiB"));
+        metrics.Add(UiText.Get("Detailed stage timings are saved with the build report."));
         ResultMetrics.Text = string.Join("\n", metrics);
         var warnings = built.Warnings;
         // A cancel prompt open for this run reports the warning too, instead of calling the end clean.
         if (warnings.Count > 0)
-            active?.NoteWarning("The ISO was saved, but some follow-up steps reported problems. See the warnings on the page.");
+            active?.NoteWarning(UiText.Get("The ISO was saved, but some follow-up steps reported problems. See the warnings on the page."));
         ResultWarnings.IsOpen = warnings.Count > 0;
         if (warnings.Count > 0)
             ResultWarnings.Message = string.Join("\n", warnings.Take(4).Select(w => "• " + ErrorText.Summary(w, 200))) +
-                (warnings.Count > 4 ? $"\n• {warnings.Count - 4} more in the build log" : "");
+                (warnings.Count > 4 ? UiText.Format($"\n• {warnings.Count - 4} more in the build log") : "");
         ResultPanel.Visibility = Visibility.Visible;
-        BuildHeading.Text = "ISO created";
-        CurrentStage.Text = "Complete";
+        BuildHeading.Text = UiText.Get("ISO created");
+        CurrentStage.Text = UiText.Get("Complete");
         BuildActivity.IsActive = false;
         BuildGlyph.Glyph = "\uE73E";
         if (resumed) board.MarkEarlierPhasesDone();
         board.Complete();
         OverallBar.Value = 100;
         BuildPercent.Text = "100%";
-        OverallStep.Text = "All stages done";
+        OverallStep.Text = UiText.Get("All stages done");
         CurrentPercent.Text = "100%";
         HistoryCount.Text = StageSummary.Describe(board);
         BuildBar.IsIndeterminate = false;
         BuildBar.Value = 100;
         CurrentMessage.Text = warnings.Count > 0 ?
-            "The ISO was saved, but some follow-up steps reported problems. See the warnings below." :
-            "The ISO and build report have been saved. Test the ISO in a VM before use.";
+            UiText.Get("The ISO was saved, but some follow-up steps reported problems. See the warnings below.") :
+            UiText.Get("The ISO and build report have been saved. Test the ISO in a VM before use.");
         stoppedRun = null;
         stoppedHasCheckpoint = false;
         completed = true;
@@ -1052,7 +1052,7 @@ public sealed partial class MainWindow : Window
                 // the build, so it must not move the page's stage, bars or history.
                 if (!string.IsNullOrWhiteSpace(p.Message) && !BuildProgressText.IsConsoleProgress(p.Message))
                 {
-                    if (running is OperationKind.Build or OperationKind.Resume) CurrentMessage.Text = $"Cancellation requested. {p.Message}…";
+                    if (running is OperationKind.Build or OperationKind.Resume) CurrentMessage.Text = UiText.Format($"Cancellation requested. {p.Message}…");
                     liveLog.Add($"[{p.Stage}] {BuildProgressText.ForDisplay(p.Message)}");
                 }
                 continue;
@@ -1065,11 +1065,11 @@ public sealed partial class MainWindow : Window
             }
             if (!string.IsNullOrWhiteSpace(p.Message) && !BuildProgressText.IsConsoleProgress(p.Message))
             {
-                CurrentStage.Text = p.Stage;
+                CurrentStage.Text = UiText.Get(p.Stage);
                 // Once cancellation has been requested, that status stays until the run actually stops.
                 if (!cancelRequested)
                     CurrentMessage.Text = p.State == BuildOperationState.Failed ?
-                        p.Message + " failed. Expand this stage for error details." : p.Message;
+                        UiText.Display(p.Message) + UiText.Get(" failed. Expand this stage for error details.") : UiText.Display(p.Message);
             }
             BuildBar.IsIndeterminate = p.Percent is null && p.State is not (BuildOperationState.Completed or BuildOperationState.Failed or BuildOperationState.Cancelled);
             if (p.Percent is double percent) BuildBar.Value = percent;
@@ -1087,7 +1087,7 @@ public sealed partial class MainWindow : Window
                 var overall = start + (end - start) * stage.Fraction(p);
                 OverallBar.Value = Math.Max(OverallBar.Value, overall);
                 BuildPercent.Text = $"{OverallBar.Value:0}%";
-                OverallStep.Text = $"Stage {phase + 1} of {board.Stages.Length}";
+                OverallStep.Text = UiText.Format($"Stage {phase + 1} of {board.Stages.Length}");
                 BuildGlyph.Glyph = stage.Glyph;
             }
             var line = p.Detail ?? (p.State is null ? null : p.Message);
@@ -1155,8 +1155,8 @@ public sealed partial class MainWindow : Window
         catch (Exception error)
         {
             // The prompt could not be shown or kept. If nothing was sent, the operation simply carries on.
-            ReportUiFailure(flow.Stage == CancelStage.Confirming ? "Cancel could not be confirmed." :
-                "The cancel dialog stopped, but the cancel was sent and the operation is still stopping.", error);
+            ReportUiFailure(flow.Stage == CancelStage.Confirming ? UiText.Get("Cancel could not be confirmed.") :
+                UiText.Get("The cancel dialog stopped, but the cancel was sent and the operation is still stopping."), error);
         }
         finally
         {
@@ -1193,15 +1193,15 @@ public sealed partial class MainWindow : Window
             await flow.Run.Settled;
             flow.RunSettled();
         }
-        catch (Exception error) { ReportUiFailure("The cancel dialog could not show how the operation ended.", error); }
+        catch (Exception error) { ReportUiFailure(UiText.Get("The cancel dialog could not show how the operation ended."), error); }
     }
 
     // The cancel has been sent: say so on the page as well, so it stays true after the prompt closes.
     private void AfterCancelRequested()
     {
         if (running is OperationKind.Build or OperationKind.Resume)
-            CurrentMessage.Text = "Cancellation requested. Waiting for the current operation to finish…";
-        Working("Cancelling…");
+            CurrentMessage.Text = UiText.Get("Cancellation requested. Waiting for the current operation to finish…");
+        Working(UiText.Get("Cancelling…"));
         UpdateNavigation();
     }
 
@@ -1248,7 +1248,7 @@ public sealed partial class MainWindow : Window
             detail.Style = hint;
             footnote.Style = hint;
             Microsoft.UI.Xaml.Automation.AutomationProperties.SetLiveSetting(status, Microsoft.UI.Xaml.Automation.Peers.AutomationLiveSetting.Polite);
-            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(bar, "Cancellation progress");
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(bar, UiText.Get("Cancellation progress"));
             progress.Children.Add(status);
             progress.Children.Add(bar);
             progress.Children.Add(detail);
@@ -1280,16 +1280,16 @@ public sealed partial class MainWindow : Window
             try { view = flow.View; }
             catch (Exception error)
             {
-                report("The cancel dialog could not read its state.", error);
+                report(UiText.Get("The cancel dialog could not read its state."), error);
                 return;
             }
-            Safely("The cancel dialog's progress could not be drawn.", () =>
+            Safely(UiText.Get("The cancel dialog's progress could not be drawn."), () =>
             {
                 bar.IsIndeterminate = view.Indeterminate;
                 bar.Value = view.Percent;
                 progress.Visibility = view.ShowProgress ? Visibility.Visible : Visibility.Collapsed;
             });
-            Safely("The cancel dialog could not show its message.", () =>
+            Safely(UiText.Get("The cancel dialog could not show its message."), () =>
             {
                 dialog.Title = view.Title;
                 var errored = view.Tone == CancelTone.Error;
@@ -1304,7 +1304,7 @@ public sealed partial class MainWindow : Window
                 Show(detail, view.Detail);
                 Show(footnote, view.Footnote);
             });
-            Safely("The cancel dialog could not update its buttons.", () =>
+            Safely(UiText.Get("The cancel dialog could not update its buttons."), () =>
             {
                 dialog.PrimaryButtonText = view.ConfirmText ?? "";
                 dialog.SecondaryButtonText = view.LinkText;
@@ -1322,7 +1322,7 @@ public sealed partial class MainWindow : Window
         {
             // The dialog stays open: from here it shows the stop, and then the result.
             args.Cancel = true;
-            Safely("The page could not be updated after the cancel was sent.", () => { if (flow.Confirm()) cancelSent(); });
+            Safely(UiText.Get("The page could not be updated after the cancel was sent."), () => { if (flow.Confirm()) cancelSent(); });
         }
 
         private void OnLink(ContentDialog sender, ContentDialogButtonClickEventArgs args)
@@ -1332,8 +1332,8 @@ public sealed partial class MainWindow : Window
             var end = flow.Run.End;
             var copy = flow.View.Link == CancelLink.CopyDetails;
             var done = copy ? end is { Details.Length: > 0 } && copyDetails(end.Details) : end?.WorkDirectory is { } directory && openLogs(directory);
-            Safely("The cancel dialog could not update its link.",
-                () => dialog.SecondaryButtonText = copy ? done ? "Copied" : "Could not copy" : done ? "Open logs" : "Could not open logs");
+            Safely(UiText.Get("The cancel dialog could not update its link."),
+                () => dialog.SecondaryButtonText = copy ? done ? UiText.Get("Copied") : UiText.Get("Could not copy") : done ? UiText.Get("Open logs") : UiText.Get("Could not open logs"));
         }
 
         private void OnClosing(ContentDialog sender, ContentDialogClosingEventArgs args)
@@ -1354,14 +1354,14 @@ public sealed partial class MainWindow : Window
         var recipe = CreateRecipe();
         recipe.ValidateOptions();
         var path = await SaveFile("tiny11-recipe", ".json");
-        if (path is not null) { recipe.Write(path); ShowNotice("Recipe saved.", "It contains selections and local paths, not downloaded media or credentials."); }
+        if (path is not null) { recipe.Write(path); ShowNotice(UiText.Get("Recipe saved."), UiText.Get("It contains selections and local paths, not downloaded media or credentials.")); }
     });
     private async void OnLoadRecipe(object sender, RoutedEventArgs args) => await RunOperation(OperationKind.Recipe, async _ =>
     {
         var path = await PickFile(".json");
         if (path is null) return;
         RestoreRecipe(BuildRecipe.Read(path));
-        ShowNotice("Recipe loaded.", "Inspect the source again. Core/expert risk acknowledgements must be renewed.");
+        ShowNotice(UiText.Get("Recipe loaded."), UiText.Get("Inspect the source again. Core/expert risk acknowledgements must be renewed."));
     });
 
     private void RestoreRecipe(BuildRecipe recipe)
@@ -1400,7 +1400,7 @@ public sealed partial class MainWindow : Window
         if (busy || modalOpen) return;
         if (!ToolLocator.IsAdministrator)
         {
-            ShowNotice("Administrator privileges required.", "Close and reopen Tiny11Builder.exe with administrator approval to recover a workspace.", InfoBarSeverity.Warning);
+            ShowNotice(UiText.Get("Administrator privileges required."), UiText.Get("Close and reopen Tiny11Builder.exe with administrator approval to recover a workspace."), InfoBarSeverity.Warning);
             return;
         }
         var path = await PickFile(".json");
@@ -1408,24 +1408,24 @@ public sealed partial class MainWindow : Window
         // Advisory only: the engine decides. This just avoids offering a discard it would refuse.
         if (JobCheckpoint.Exists(Path.GetDirectoryName(Path.GetFullPath(path)) ?? ""))
         {
-            if (await Confirm("This job has saved progress",
-                "Recover discards a job's working copy, and it does not do that for a job with saved progress. " +
-                "Resume continues the build from that progress instead.\n\nNothing has been changed.", "Resume instead"))
+            if (await Confirm(UiText.Get("This job has saved progress"),
+                UiText.Get("Recover discards a job's working copy, and it does not do that for a job with saved progress. ") +
+                UiText.Get("Resume continues the build from that progress instead.\n\nNothing has been changed."), UiText.Get("Resume instead")))
                 await ResumeJobAsync(path);
             return;
         }
-        if (!await Confirm("Discard this interrupted workspace?",
-            "Select only job.json from the interrupted tiny11 job. This discards that job's mounted working copy and removes its staged media. " +
-            "Its logs, recipe, report and your source ISO are kept. A job whose image was already committed has saved progress and is never discarded here; " +
-            "use Resume build for it. Active builds cannot be recovered.",
-            "Discard working copy")) return;
+        if (!await Confirm(UiText.Get("Discard this interrupted workspace?"),
+            UiText.Get("Select only job.json from the interrupted tiny11 job. This discards that job's mounted working copy and removes its staged media. ") +
+            UiText.Get("Its logs, recipe, report and your source ISO are kept. A job whose image was already committed has saved progress and is never discarded here; ") +
+            UiText.Get("use Resume build for it. Active builds cannot be recovered."),
+            UiText.Get("Discard working copy"))) return;
         await RunOperation(OperationKind.Recover, async token =>
         {
-            Working("Recovering workspace…");
+            Working(UiText.Get("Recovering workspace…"));
             var dism = ToolLocator.FindDism();
             ToolLocator.Validate(dism, "dism.exe");
             await Task.Run(() => engine.RecoverAsync(path, dism, token), token);
-            ShowNotice("Workspace recovered.", "The interrupted working copy was discarded. Your source and logs were preserved.");
+            ShowNotice(UiText.Get("Workspace recovered."), UiText.Get("The interrupted working copy was discarded. Your source and logs were preserved."));
         });
     }
 
@@ -1450,22 +1450,22 @@ public sealed partial class MainWindow : Window
         var candidate = ResumeSupport.Inspect(jobFile, JobCheckpoint.Exists, JobCheckpoint.RecipeFileName);
         if (candidate.Recipe is not { } original)
         {
-            ShowNotice("This build can't be resumed.", candidate.Problem ?? ResumeSupport.NoCheckpoint, InfoBarSeverity.Warning);
+            ShowNotice(UiText.Get("This build can't be resumed."), candidate.Problem ?? ResumeSupport.NoCheckpoint, InfoBarSeverity.Warning);
             return;
         }
         if (!ToolLocator.IsAdministrator)
         {
-            ShowNotice("Administrator privileges required.", "Close and reopen Tiny11Builder.exe with administrator approval, then choose Resume build. Nothing was changed.", InfoBarSeverity.Warning);
+            ShowNotice(UiText.Get("Administrator privileges required."), UiText.Get("Close and reopen Tiny11Builder.exe with administrator approval, then choose Resume build. Nothing was changed."), InfoBarSeverity.Warning);
             return;
         }
-        if (!await Confirm("Resume this build?", ResumeSupport.Describe(original), "Resume")) return;
+        if (!await Confirm(UiText.Get("Resume this build?"), ResumeSupport.Describe(original), UiText.Get("Resume"))) return;
         var recipe = original;
         if (File.Exists(recipe.OutputPath))
         {
             var picked = await SaveFile(Path.GetFileNameWithoutExtension(recipe.OutputPath), ".iso");
             if (picked is null)
             {
-                ShowNotice("Resume not started.", "The output file already exists. Choose a new file name to continue.", InfoBarSeverity.Warning);
+                ShowNotice(UiText.Get("Resume not started."), UiText.Get("The output file already exists. Choose a new file name to continue."), InfoBarSeverity.Warning);
                 return;
             }
             recipe = recipe with { OutputPath = picked };
@@ -1480,11 +1480,11 @@ public sealed partial class MainWindow : Window
             workDirectory = candidate.JobDirectory;
             BuildActivity.IsActive = true;
             BuildBar.IsIndeterminate = true;
-            CurrentMessage.Text = "Preparing image tools…";
+            CurrentMessage.Text = UiText.Get("Preparing image tools…");
             await EnsureToolsAsync(token);
             recipe = recipe with { DismPath = servicingTool, OscdimgPath = isoTool };
             new BuildHost().ValidateTools(recipe);
-            BeginBuildRun("Resuming");
+            BeginBuildRun(UiText.Get("Resuming"));
             var reporter = BuildProgressReporter();
             var built = await Task.Run(() => engine.ResumeAsync(candidate.JobFile, recipe, reporter, token), token);
             ShowBuildResult(built, resumed: true, turbo: recipe.TurboMode);
@@ -1500,7 +1500,7 @@ public sealed partial class MainWindow : Window
         if (workDirectory is null) return;
         if (!Directory.Exists(workDirectory))
         {
-            ShowNotice("The job folder is gone.", $"{workDirectory} no longer exists.", InfoBarSeverity.Warning);
+            ShowNotice(UiText.Get("The job folder is gone."), UiText.Format($"{workDirectory} no longer exists."), InfoBarSeverity.Warning);
             return;
         }
         OpenFolder(workDirectory);
@@ -1508,7 +1508,7 @@ public sealed partial class MainWindow : Window
     private void OpenFolder(string path)
     {
         try { using var process = Process.Start(new ProcessStartInfo("explorer.exe") { UseShellExecute = true, Arguments = $"\"{path}\"" }); }
-        catch (Exception error) { ShowNotice("Folder could not be opened.", ErrorText.Reason(error), InfoBarSeverity.Error); }
+        catch (Exception error) { ShowNotice(UiText.Get("Folder could not be opened."), ErrorText.Reason(error), InfoBarSeverity.Error); }
     }
 
     private void OnThemeChanged(object sender, SelectionChangedEventArgs args) => ApplyTheme();
@@ -1540,7 +1540,7 @@ public sealed partial class MainWindow : Window
         if (contrast == appliedContrast) return;
         appliedContrast = contrast;
         StepNumber.Visibility = contrast ? Visibility.Collapsed : Visibility.Visible;
-        ToolTipService.SetToolTip(ThemeChoice, contrast ? "Windows high contrast is on, so colors follow your system settings." : null);
+        ToolTipService.SetToolTip(ThemeChoice, contrast ? UiText.Get("Windows high contrast is on, so colors follow your system settings.") : null);
         ApplyTheme();
         UpdateNavigation();
     }

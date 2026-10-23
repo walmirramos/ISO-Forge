@@ -24,9 +24,9 @@ public sealed class OptionChoice(CleanupOption option) : ObservableChoice
 {
     private bool selected = option.Balanced;
     public CleanupOption Option { get; } = option;
-    public string Title => Option.Title;
-    public string Description => Option.Description;
-    public string Category => Option.Category;
+    public string Title => UiText.Get(Option.Title);
+    public string Description => UiText.Get(Option.Description);
+    public string Category => UiText.Get(Option.Category);
     public bool Selected { get => selected; set => Set(ref selected, value); }
 }
 
@@ -36,11 +36,11 @@ public sealed class InventoryChoice(ImageInventoryItem item) : ObservableChoice
     private int modeIndex = item.Kind == ImageItemKind.Service ? 0 : 1;
     public ImageInventoryItem Item { get; } = item;
     public string Title => Item.Identity;
-    public string Detail => $"{Item.Kind} · {Item.Detail}";
-    public string Risk => Item.Protected ? "Protected / potentially boot-critical" : "Application";
-    public string ModeLabel => $"Action for {Title}";
+    public string Detail => $"{UiText.Get(Item.Kind.ToString())} · {Item.Detail}";
+    public string Risk => Item.Protected ? UiText.Get("Protected / potentially boot-critical") : UiText.Get("Application");
+    public string ModeLabel => UiText.Format($"Action for {Title}");
     public bool HasModes => Item.Kind is ImageItemKind.Service or ImageItemKind.Feature;
-    public string[] Modes { get; } = ["Disable", "Remove"];
+    public string[] Modes { get; } = [UiText.Get("Disable"), UiText.Get("Remove")];
     public bool Selected { get => selected; set => Set(ref selected, value); }
     public int ModeIndex { get => modeIndex; set => Set(ref modeIndex, value); }
     public ExpertAction Action => new(Item.Kind, Item.Identity, ModeIndex == 0 ? ExpertActionMode.Disable : ExpertActionMode.Remove);
@@ -52,8 +52,8 @@ public sealed class BuildStageBoard
 {
     public BuildStageChoice[] Stages { get; } =
     [
-        new("Prepare media", "\uE8B7"), new("Export and mount", "\uE7C5"), new("Remove components", "\uE74D"),
-        new("Commit image", "\uE74E"), new("Compress image", "\uE8B9"), new("Create ISO", "\uE958"), new("Verify output", "\uE73E")
+        new(UiText.Get("Prepare media"), "\uE8B7"), new(UiText.Get("Export and mount"), "\uE7C5"), new(UiText.Get("Remove components"), "\uE74D"),
+        new(UiText.Get("Commit image"), "\uE74E"), new(UiText.Get("Compress image"), "\uE8B9"), new(UiText.Get("Create ISO"), "\uE958"), new(UiText.Get("Verify output"), "\uE73E")
     ];
 
     // Returns the phase the event belongs to, or -1 when it is not a displayed operation.
@@ -81,7 +81,7 @@ public sealed class BuildStageChoice(string title, string glyph) : ObservableCho
 {
     private const string StagePrefix = "stage:";
     private static readonly int StateCount = Enum.GetValues<BuildOperationState>().Length;
-    private string status = "Waiting";
+    private string status = UiText.Get("Waiting");
     private bool expanded;
     private bool halted;
     private bool doneEarlier;
@@ -97,7 +97,7 @@ public sealed class BuildStageChoice(string title, string glyph) : ObservableCho
         public int ItemTotal;
     }
 
-    public string Title { get; } = title;
+    public string Title { get; } = UiText.Display(title);
     public string Glyph { get; } = glyph;
     public string Status { get => status; set { if (Set(ref status, value)) Notify(nameof(AutomationName)); } }
     public string AutomationName => $"{Title}, {Status}";
@@ -111,7 +111,7 @@ public sealed class BuildStageChoice(string title, string glyph) : ObservableCho
         Operations.Clear();
         halted = false;
         doneEarlier = false;
-        Status = "Waiting";
+        Status = UiText.Get("Waiting");
         Expanded = false;
     }
 
@@ -171,13 +171,13 @@ public sealed class BuildStageChoice(string title, string glyph) : ObservableCho
         RefreshStatus();
     }
 
-    public void Complete() => Status = doneEarlier ? "Done earlier" : "Complete";
+    public void Complete() => Status = doneEarlier ? UiText.Get("Done earlier") : UiText.Get("Complete");
 
     public void MarkDoneEarlier()
     {
         if (Operations.Count > 0) return;
         doneEarlier = true;
-        Status = "Done earlier";
+        Status = UiText.Get("Done earlier");
     }
 
     private int InsertIndex(string stage)
@@ -215,11 +215,11 @@ public sealed class BuildStageChoice(string title, string glyph) : ObservableCho
             if (tally.Own is BuildOperationState.Failed && tally.Items[(int)BuildOperationState.Failed] == 0) failed++;
             if (tally.Own is BuildOperationState.Cancelled && tally.Items[(int)BuildOperationState.Cancelled] == 0) cancelled++;
         }
-        var rest = pending == 0 ? "" : halted ? $" · {pending} not run" : $" · {pending} next";
-        Status = failed > 0 ? $"{(failed == 1 ? "Failed: " + ErrorText.Clip(FirstFailedTitle(), 48) : failed + " failed")} · {done} done{rest}" :
-            cancelled > 0 ? $"Cancelled · {done} done{rest}" :
-            running ? $"In progress · {done} done{rest}" :
-            pending > 0 ? (halted && done == 0 ? "Not run" : $"{done} done{rest}") : "Complete";
+        var rest = pending == 0 ? "" : halted ? UiText.Format($" · {pending} not run") : UiText.Format($" · {pending} next");
+        Status = failed > 0 ? UiText.Format($"{(failed == 1 ? UiText.Get("Failed: ") + ErrorText.Clip(FirstFailedTitle(), 48) : failed + UiText.Get(" failed"))} · {done} done{rest}") :
+            cancelled > 0 ? UiText.Format($"Cancelled · {done} done{rest}") :
+            running ? UiText.Format($"In progress · {done} done{rest}") :
+            pending > 0 ? (halted && done == 0 ? UiText.Get("Not run") : UiText.Format($"{done} done{rest}")) : UiText.Get("Complete");
     }
 
     private string FirstFailedTitle() =>
@@ -235,7 +235,7 @@ public sealed class BuildOperationChoice(string id, string title, string stage) 
     private string detail = "";
     private bool notRun;
     public string Id { get; } = id;
-    public string Title { get; } = title;
+    public string Title { get; } = UiText.Display(title);
     public string Stage { get; } = stage;
     public string Detail { get => detail; private set { if (Set(ref detail, value)) Notify(nameof(HasDetail)); } }
     public string FullDetail { get; private set; } = "";
@@ -252,9 +252,9 @@ public sealed class BuildOperationChoice(string id, string title, string stage) 
     }
     public string Status => State switch
     {
-        BuildOperationState.Running => "In progress", BuildOperationState.Completed => "Done",
-        BuildOperationState.Skipped => "Skipped", BuildOperationState.Failed => "Failed",
-        BuildOperationState.Cancelled => "Cancelled", _ => NotRun ? "Not run" : "Next"
+        BuildOperationState.Running => UiText.Get("In progress"), BuildOperationState.Completed => UiText.Get("Done"),
+        BuildOperationState.Skipped => UiText.Get("Skipped"), BuildOperationState.Failed => UiText.Get("Failed"),
+        BuildOperationState.Cancelled => UiText.Get("Cancelled"), _ => NotRun ? UiText.Get("Not run") : UiText.Get("Next")
     };
     public string Glyph => State switch
     {

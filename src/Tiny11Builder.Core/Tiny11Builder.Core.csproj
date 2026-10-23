@@ -2,4 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization/pt-BR.json" LogicalName="Tiny11Builder.Core.Localization.pt-BR.json" />
+  </ItemGroup>
 </Project>

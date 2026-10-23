@@ -1,5 +1,7 @@
 # Tiny11 Builder
 
+**Edição em português do Brasil (WinUI 3):** [instruções e notas da tradução](docs/pt-BR.md).
+
 Build a smaller Windows 11 ISO with a native WinUI app. Download an official
 Windows image or use your own, choose what to remove, and create your ISO.
 
